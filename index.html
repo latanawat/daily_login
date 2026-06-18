@@ -61,9 +61,7 @@ small.dim{color:var(--mut);font-weight:400}
   <button class="btn" id="importBtn">+ นำเข้าไฟล์รายวัน (.xlsx)</button>
   <input type="file" id="fileIn" accept=".xlsx" style="display:none" multiple>
   <div class="daypicker">แสดงข้อมูลวันที่: <select id="daySel"></select></div>
-  <button class="btn ghost" id="restoreBtn">กู้คืนประวัติ</button>
-  <input type="file" id="restoreIn" accept=".json" style="display:none">
-  <button class="btn ghost" id="clearBtn">ล้างประวัติ</button>
+  <button class="btn ghost" id="clearBtn">⟳ Refresh ข้อมูล</button>
   <select id="exportStore"><option value="">— เลือกสาขาเพื่อ export —</option></select>
   <button class="btn" id="exportInactiveBtn" style="background:#0d8a52">⬇ Export คนยังไม่ active วันล่าสุด (.xlsx)</button>
 </div>
@@ -363,7 +361,7 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelect
 document.getElementById('importBtn').onclick=()=>fileIn.click();
 fileIn.onchange=e=>{importFiles([...e.target.files]);fileIn.value='';};
 document.getElementById('daySel').onchange=e=>{current=e.target.value;render();};
-document.getElementById('clearBtn').onclick=()=>{if(confirm('ล้างประวัติที่นำเข้าเอง แล้วเหลือเฉพาะวันฐาน (16-17/06/2026)?')){localStorage.removeItem(LSKEY);history={};peopleCache={};seed();current=days().slice(-1)[0];buildDaySel();render();toast('ล้างประวัติแล้ว');}};
+document.getElementById('clearBtn').onclick=()=>{if(confirm('รีเฟรชข้อมูลเป็นเวอร์ชันล่าสุดที่เผยแพร่ (ล้างไฟล์ที่นำเข้าเองในเครื่อง)?')){localStorage.removeItem(LSKEY);history={};peopleCache={};seed();current=days().slice(-1)[0];buildDaySel();render();toast('รีเฟรชข้อมูลแล้ว');}};
 document.getElementById('exportInactiveBtn').onclick=()=>{
   const iso=current,ppl=peopleCache[iso];
   const pick=document.getElementById('exportStore').value;
@@ -392,8 +390,6 @@ document.getElementById('exportInactiveBtn').onclick=()=>{
   XLSX.writeFile(wb,'not_active_'+tag+'_'+iso.replace(/-/g,'')+'.xlsx');
   toast('Export '+inact.length+' คน · '+(all?'ทุกสาขา':'สาขา '+pick)+' · '+thaiDate(iso));
 };
-document.getElementById('restoreBtn').onclick=()=>restoreIn.click();
-restoreIn.onchange=e=>{const f=e.target.files[0];if(!f)return;const fr=new FileReader();fr.onload=ev=>{try{const h=JSON.parse(ev.target.result);history={...history,...h};saveHistory();buildDaySel();current=days().slice(-1)[0];render();toast('กู้คืนประวัติแล้ว');}catch(err){toast('ไฟล์ไม่ถูกต้อง');}};fr.readAsText(f);restoreIn.value='';};
 
 // init
 loadHistory();seed();current=days().slice(-1)[0];buildDaySel();render();

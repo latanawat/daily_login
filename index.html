@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<!-- saved from url=(0046)file:///C:/claude_track_one_connect/index.html -->
-<html lang="th"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="th">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>One Connect — % Daily Login Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -59,20 +59,21 @@ small.dim{color:var(--mut);font-weight:400}
 
 <div class="topbar">
   <button class="btn" id="importBtn">+ นำเข้าไฟล์รายวัน (.xlsx)</button>
-  <input type="file" id="fileIn" accept=".xlsx" style="display:none" multiple="">
-  <div class="daypicker">แสดงข้อมูลวันที่: <select id="daySel"><option value="2026-06-16">16/06/2026</option><option value="2026-06-17">17/06/2026</option></select></div>
-  <button class="btn ghost" id="exportBtn">ดาวน์โหลดประวัติ (JSON)</button>
+  <input type="file" id="fileIn" accept=".xlsx" style="display:none" multiple>
+  <div class="daypicker">แสดงข้อมูลวันที่: <select id="daySel"></select></div>
   <button class="btn ghost" id="restoreBtn">กู้คืนประวัติ</button>
   <input type="file" id="restoreIn" accept=".json" style="display:none">
   <button class="btn ghost" id="clearBtn">ล้างประวัติ</button>
+  <select id="exportStore"><option value="">— เลือกสาขาเพื่อ export —</option></select>
+  <button class="btn" id="exportInactiveBtn" style="background:#0d8a52">⬇ Export คนยังไม่ active (.xlsx)</button>
 </div>
 
 <div class="cards">
-  <div class="card big"><div class="lbl">% Daily Login</div><div class="val" id="kpiPct">93.7<small>%</small> <span class="delta up">▲ 68.8</span></div></div>
-  <div class="card"><div class="lbl">Login วันนี้</div><div class="val" id="kpiLogin">4,053</div></div>
-  <div class="card"><div class="lbl">User ทั้งหมด</div><div class="val" id="kpiTotal">4,324</div></div>
-  <div class="card"><div class="lbl">สาขา</div><div class="val" id="kpiStores">74</div></div>
-  <div class="card"><div class="lbl">วันที่เก็บข้อมูล</div><div class="val" id="kpiDays" style="font-size:26px">2</div></div>
+  <div class="card big"><div class="lbl">% Daily Login</div><div class="val" id="kpiPct"></div></div>
+  <div class="card"><div class="lbl">Login วันนี้</div><div class="val" id="kpiLogin"></div></div>
+  <div class="card"><div class="lbl">User ทั้งหมด</div><div class="val" id="kpiTotal"></div></div>
+  <div class="card"><div class="lbl">สาขา</div><div class="val" id="kpiStores"></div></div>
+  <div class="card"><div class="lbl">วันที่เก็บข้อมูล</div><div class="val" id="kpiDays" style="font-size:26px"></div></div>
 </div>
 
 <div class="sec">
@@ -91,15 +92,11 @@ small.dim{color:var(--mut);font-weight:400}
       <select id="trendMode"><option value="overall">ภาพรวมทั้งระบบ</option><option value="dm">เจาะราย DM</option><option value="store">เจาะรายสาขา</option></select>
       <select id="trendEntity" style="display:none"></select>
     </div>
-    <div class="chartwrap" style="height:360px;margin-bottom:18px"><canvas id="trendChart" width="1190" height="360" style="display: block; box-sizing: border-box; height: 360px; width: 1190px;"></canvas></div>
+    <div class="chartwrap" style="height:360px;margin-bottom:18px"><canvas id="trendChart"></canvas></div>
     <div class="tablebox">
       <table id="trendTable"><thead><tr>
         <th>วันที่</th><th class="num">User</th><th class="num">Login</th><th class="num">% Daily Login</th><th class="num">เปลี่ยนแปลง</th><th>&nbsp;</th>
-      </tr></thead><tbody><tr><td><b>16/06/2026</b></td><td class="num">4,294</td><td class="num">1,070</td>
-      <td class="num" style="color:#f59e0b;font-weight:700">24.9%</td><td class="num muted">—</td>
-      <td></td></tr><tr><td><b>17/06/2026</b></td><td class="num">4,324</td><td class="num">4,053</td>
-      <td class="num" style="color:#22c55e;font-weight:700">93.7%</td><td class="num up">▲ 68.8</td>
-      <td><span class="pill yes">กำลังแสดง</span></td></tr></tbody></table>
+      </tr></thead><tbody></tbody></table>
     </div>
     <div class="muted" id="trendNote"></div>
   </div>
@@ -108,47 +105,11 @@ small.dim{color:var(--mut);font-weight:400}
   <div id="dmView" style="display:none">
     <h2>% Daily Login แยกตาม District Manager</h2>
     <div class="hint">ตัวเลขกำกับ = % (login/user)</div>
-    <div class="chartwrap" id="dmChartWrap" style="margin-bottom: 18px; height: 360px;"><canvas id="dmChart" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div>
+    <div class="chartwrap" id="dmChartWrap" style="margin-bottom:18px"><canvas id="dmChart"></canvas></div>
     <div class="tablebox"><table id="dmTable"><thead><tr>
       <th data-k="dm">District Manager</th><th class="num" data-k="stores">สาขา</th><th class="num" data-k="total">User</th>
       <th class="num" data-k="login">Login</th><th class="num" data-k="pct">% Daily Login</th><th class="num">vs วันก่อน</th><th>&nbsp;</th>
-    </tr></thead><tbody><tr><td><b>Buratuch Kochaplayuk</b></td><td class="num">1</td>
-    <td class="num">134</td><td class="num">130</td>
-    <td class="num" style="color:#22c55e;font-weight:700">97.0%</td><td class="num up">▲ 77.1</td>
-    <td><span class="bar"><i style="width:100%;background:#22c55e"></i></span></td></tr><tr><td><b>Kittipong Sangcharoe</b></td><td class="num">8</td>
-    <td class="num">562</td><td class="num">536</td>
-    <td class="num" style="color:#22c55e;font-weight:700">95.4%</td><td class="num up">▲ 68.8</td>
-    <td><span class="bar"><i style="width:98.35051546391753%;background:#22c55e"></i></span></td></tr><tr><td><b>Boondharika Kaweewon</b></td><td class="num">6</td>
-    <td class="num">407</td><td class="num">388</td>
-    <td class="num" style="color:#22c55e;font-weight:700">95.3%</td><td class="num up">▲ 62.8</td>
-    <td><span class="bar"><i style="width:98.24742268041237%;background:#22c55e"></i></span></td></tr><tr><td><b>Panat Pookpho</b></td><td class="num">9</td>
-    <td class="num">510</td><td class="num">484</td>
-    <td class="num" style="color:#22c55e;font-weight:700">94.9%</td><td class="num up">▲ 58.5</td>
-    <td><span class="bar"><i style="width:97.83505154639175%;background:#22c55e"></i></span></td></tr><tr><td><b>Phassakorn Wasuwanic</b></td><td class="num">1</td>
-    <td class="num">193</td><td class="num">183</td>
-    <td class="num" style="color:#22c55e;font-weight:700">94.8%</td><td class="num up">▲ 86.5</td>
-    <td><span class="bar"><i style="width:97.73195876288659%;background:#22c55e"></i></span></td></tr><tr><td><b>Auttapon Prichananon</b></td><td class="num">10</td>
-    <td class="num">397</td><td class="num">375</td>
-    <td class="num" style="color:#22c55e;font-weight:700">94.5%</td><td class="num up">▲ 63.4</td>
-    <td><span class="bar"><i style="width:97.42268041237114%;background:#22c55e"></i></span></td></tr><tr><td><b>Phatcharee Tipmabutr</b></td><td class="num">1</td>
-    <td class="num">187</td><td class="num">176</td>
-    <td class="num" style="color:#22c55e;font-weight:700">94.1%</td><td class="num up">▲ 86.6</td>
-    <td><span class="bar"><i style="width:97.01030927835052%;background:#22c55e"></i></span></td></tr><tr><td><b>Duangduan Indee</b></td><td class="num">10</td>
-    <td class="num">379</td><td class="num">354</td>
-    <td class="num" style="color:#22c55e;font-weight:700">93.4%</td><td class="num up">▲ 64.8</td>
-    <td><span class="bar"><i style="width:96.28865979381443%;background:#22c55e"></i></span></td></tr><tr><td><b>Yanapat Phothaworn</b></td><td class="num">10</td>
-    <td class="num">382</td><td class="num">355</td>
-    <td class="num" style="color:#22c55e;font-weight:700">92.9%</td><td class="num up">▲ 73.9</td>
-    <td><span class="bar"><i style="width:95.77319587628867%;background:#22c55e"></i></span></td></tr><tr><td><b>Wiboon Likkittamawon</b></td><td class="num">1</td>
-    <td class="num">161</td><td class="num">149</td>
-    <td class="num" style="color:#22c55e;font-weight:700">92.5%</td><td class="num up">▲ 77.0</td>
-    <td><span class="bar"><i style="width:95.36082474226805%;background:#22c55e"></i></span></td></tr><tr><td><b>Thanamet Pongpornkul</b></td><td class="num">9</td>
-    <td class="num">388</td><td class="num">356</td>
-    <td class="num" style="color:#22c55e;font-weight:700">91.8%</td><td class="num up">▲ 67.8</td>
-    <td><span class="bar"><i style="width:94.63917525773195%;background:#22c55e"></i></span></td></tr><tr><td><b>Suchart Chaimomgkol</b></td><td class="num">8</td>
-    <td class="num">624</td><td class="num">567</td>
-    <td class="num" style="color:#22c55e;font-weight:700">90.9%</td><td class="num up">▲ 69.7</td>
-    <td><span class="bar"><i style="width:93.71134020618558%;background:#22c55e"></i></span></td></tr></tbody></table></div>
+    </tr></thead><tbody></tbody></table></div>
   </div>
 
   <!-- STORE -->
@@ -156,310 +117,14 @@ small.dim{color:var(--mut);font-weight:400}
     <h2 style="margin-bottom:12px">% Daily Login รายสาขา</h2>
     <div class="controls">
       <input type="text" id="storeSearch" placeholder="ค้นหาสาขา / ชื่อ / DM...">
-      <select id="storeDM"><option value="">ทุก DM</option><option value="Auttapon Prichananon">Auttapon Prichananon</option><option value="Boondharika Kaweewon">Boondharika Kaweewon</option><option value="Buratuch Kochaplayuk">Buratuch Kochaplayuk</option><option value="Duangduan Indee">Duangduan Indee</option><option value="Kittipong Sangcharoe">Kittipong Sangcharoe</option><option value="Panat Pookpho">Panat Pookpho</option><option value="Phassakorn Wasuwanic">Phassakorn Wasuwanic</option><option value="Phatcharee Tipmabutr">Phatcharee Tipmabutr</option><option value="Suchart Chaimomgkol">Suchart Chaimomgkol</option><option value="Thanamet Pongpornkul">Thanamet Pongpornkul</option><option value="Wiboon Likkittamawon">Wiboon Likkittamawon</option><option value="Yanapat Phothaworn">Yanapat Phothaworn</option></select>
-      <span class="cnt" id="storeCnt">74 สาขา</span>
+      <select id="storeDM"><option value="">ทุก DM</option></select>
+      <span class="cnt" id="storeCnt"></span>
     </div>
     <div class="tablebox"><table id="storeTable"><thead><tr>
       <th data-k="store">รหัส</th><th data-k="name">ชื่อสาขา</th><th data-k="dm">District Manager</th>
       <th class="num" data-k="total">User</th><th class="num" data-k="login">Login</th>
       <th class="num" data-k="pct">% Daily Login</th><th class="num">vs วันก่อน</th><th>&nbsp;</th>
-    </tr></thead><tbody><tr><td><b>BN</b></td>
-    <td>Bangna-CDS <small class="dim">· Core XL</small></td><td>Kittipong Sangcharoe</td>
-    <td class="num">109</td><td class="num">107</td>
-    <td class="num" style="color:#22c55e;font-weight:700">98.2%</td><td class="num up">▲ 77.8</td>
-    <td><span class="bar"><i style="width:100%;background:#22c55e"></i></span></td></tr><tr><td><b>CI</b></td>
-    <td>Chiangrai <small class="dim">· Core S</small></td><td>Thanamet Pongpornkul</td>
-    <td class="num">46</td><td class="num">45</td>
-    <td class="num" style="color:#22c55e;font-weight:700">97.8%</td><td class="num up">▲ 67.4</td>
-    <td><span class="bar"><i style="width:99.59266802443992%;background:#22c55e"></i></span></td></tr><tr><td><b>PB</b></td>
-    <td>Phetchaburi <small class="dim">· Affordable</small></td><td>Duangduan Indee</td>
-    <td class="num">41</td><td class="num">40</td>
-    <td class="num" style="color:#22c55e;font-weight:700">97.6%</td><td class="num up">▲ 77.6</td>
-    <td><span class="bar"><i style="width:99.38900203665987%;background:#22c55e"></i></span></td></tr><tr><td><b>SU</b></td>
-    <td>Surin <small class="dim">· Affordable</small></td><td>Auttapon Prichananon</td>
-    <td class="num">40</td><td class="num">39</td>
-    <td class="num" style="color:#22c55e;font-weight:700">97.5%</td><td class="num up">▲ 53.6</td>
-    <td><span class="bar"><i style="width:99.28716904276985%;background:#22c55e"></i></span></td></tr><tr><td><b>UD</b></td>
-    <td>Udon Thani <small class="dim">· Core L</small></td><td>Suchart Chaimomgkol</td>
-    <td class="num">80</td><td class="num">78</td>
-    <td class="num" style="color:#22c55e;font-weight:700">97.5%</td><td class="num up">▲ 81.3</td>
-    <td><span class="bar"><i style="width:99.28716904276985%;background:#22c55e"></i></span></td></tr><tr><td><b>BU</b></td>
-    <td>Buriram <small class="dim">· Affordable</small></td><td>Auttapon Prichananon</td>
-    <td class="num">37</td><td class="num">36</td>
-    <td class="num" style="color:#22c55e;font-weight:700">97.3%</td><td class="num up">▲ 56.8</td>
-    <td><span class="bar"><i style="width:99.0835030549898%;background:#22c55e"></i></span></td></tr><tr><td><b>EV</b></td>
-    <td>Eastville <small class="dim">· Core L</small></td><td>Boondharika Kaweewon</td>
-    <td class="num">75</td><td class="num">73</td>
-    <td class="num" style="color:#22c55e;font-weight:700">97.3%</td><td class="num up">▲ 64.0</td>
-    <td><span class="bar"><i style="width:99.0835030549898%;background:#22c55e"></i></span></td></tr><tr><td><b>JL</b></td>
-    <td>Jungceylon <small class="dim">· Core M</small></td><td>Panat Pookpho</td>
-    <td class="num">36</td><td class="num">35</td>
-    <td class="num" style="color:#22c55e;font-weight:700">97.2%</td><td class="num up">▲ 83.3</td>
-    <td><span class="bar"><i style="width:98.98167006109979%;background:#22c55e"></i></span></td></tr><tr><td><b>PK</b></td>
-    <td>Pinklao <small class="dim">· Core XL</small></td><td>Buratuch Kochaplayuk</td>
-    <td class="num">134</td><td class="num">130</td>
-    <td class="num" style="color:#22c55e;font-weight:700">97.0%</td><td class="num up">▲ 77.1</td>
-    <td><span class="bar"><i style="width:98.77800407331975%;background:#22c55e"></i></span></td></tr><tr><td><b>FH</b></td>
-    <td>Central Festival Hadyai <small class="dim">· Core L</small></td><td>Panat Pookpho</td>
-    <td class="num">100</td><td class="num">97</td>
-    <td class="num" style="color:#22c55e;font-weight:700">97.0%</td><td class="num up">▲ 40.0</td>
-    <td><span class="bar"><i style="width:98.77800407331975%;background:#22c55e"></i></span></td></tr><tr><td><b>MC</b></td>
-    <td>Mahachai <small class="dim">· Affordable</small></td><td>Duangduan Indee</td>
-    <td class="num">32</td><td class="num">31</td>
-    <td class="num" style="color:#22c55e;font-weight:700">96.9%</td><td class="num up">▲ 87.5</td>
-    <td><span class="bar"><i style="width:98.67617107942974%;background:#22c55e"></i></span></td></tr><tr><td><b>R2</b></td>
-    <td>Rama II <small class="dim">· Core L</small></td><td>Boondharika Kaweewon</td>
-    <td class="num">93</td><td class="num">90</td>
-    <td class="num" style="color:#22c55e;font-weight:700">96.8%</td><td class="num up">▲ 51.1</td>
-    <td><span class="bar"><i style="width:98.57433808553971%;background:#22c55e"></i></span></td></tr><tr><td><b>KR</b></td>
-    <td>Nakhon Ratchasima <small class="dim">· Core S</small></td><td>Suchart Chaimomgkol</td>
-    <td class="num">62</td><td class="num">60</td>
-    <td class="num" style="color:#22c55e;font-weight:700">96.8%</td><td class="num up">▲ 45.2</td>
-    <td><span class="bar"><i style="width:98.57433808553971%;background:#22c55e"></i></span></td></tr><tr><td><b>UN</b></td>
-    <td>Ubon Ratchathani <small class="dim">· Core M</small></td><td>Auttapon Prichananon</td>
-    <td class="num">61</td><td class="num">59</td>
-    <td class="num" style="color:#22c55e;font-weight:700">96.7%</td><td class="num up">▲ 74.1</td>
-    <td><span class="bar"><i style="width:98.4725050916497%;background:#22c55e"></i></span></td></tr><tr><td><b>WG</b></td>
-    <td>Westgate <small class="dim">· Core L</small></td><td>Kittipong Sangcharoe</td>
-    <td class="num">85</td><td class="num">82</td>
-    <td class="num" style="color:#22c55e;font-weight:700">96.5%</td><td class="num up">▲ 62.8</td>
-    <td><span class="bar"><i style="width:98.26883910386965%;background:#22c55e"></i></span></td></tr><tr><td><b>SY</b></td>
-    <td>Salaya <small class="dim">· Core S</small></td><td>Kittipong Sangcharoe</td>
-    <td class="num">55</td><td class="num">53</td>
-    <td class="num" style="color:#22c55e;font-weight:700">96.4%</td><td class="num up">▲ 47.3</td>
-    <td><span class="bar"><i style="width:98.16700610997964%;background:#22c55e"></i></span></td></tr><tr><td><b>PA</b></td>
-    <td>Patong <small class="dim">· Core M</small></td><td>Panat Pookpho</td>
-    <td class="num">55</td><td class="num">53</td>
-    <td class="num" style="color:#22c55e;font-weight:700">96.4%</td><td class="num up">▲ 26.8</td>
-    <td><span class="bar"><i style="width:98.16700610997964%;background:#22c55e"></i></span></td></tr><tr><td><b>PL</b></td>
-    <td>Phitsanulok <small class="dim">· Core S</small></td><td>Thanamet Pongpornkul</td>
-    <td class="num">56</td><td class="num">54</td>
-    <td class="num" style="color:#22c55e;font-weight:700">96.4%</td><td class="num up">▲ 67.8</td>
-    <td><span class="bar"><i style="width:98.16700610997964%;background:#22c55e"></i></span></td></tr><tr><td><b>FC</b></td>
-    <td>Central Festival Chiangmai <small class="dim">· Brand Shop</small></td><td>Suchart Chaimomgkol</td>
-    <td class="num">110</td><td class="num">106</td>
-    <td class="num" style="color:#22c55e;font-weight:700">96.4%</td><td class="num up">▲ 80.2</td>
-    <td><span class="bar"><i style="width:98.16700610997964%;background:#22c55e"></i></span></td></tr><tr><td><b>MG</b></td>
-    <td>Mega Bangna <small class="dim">· Core XL</small></td><td>Boondharika Kaweewon</td>
-    <td class="num">82</td><td class="num">79</td>
-    <td class="num" style="color:#22c55e;font-weight:700">96.3%</td><td class="num up">▲ 75.6</td>
-    <td><span class="bar"><i style="width:98.06517311608961%;background:#22c55e"></i></span></td></tr><tr><td><b>PY</b></td>
-    <td>Pattaya <small class="dim">· Core XL</small></td><td>Kittipong Sangcharoe</td>
-    <td class="num">81</td><td class="num">78</td>
-    <td class="num" style="color:#22c55e;font-weight:700">96.3%</td><td class="num up">▲ 73.8</td>
-    <td><span class="bar"><i style="width:98.06517311608961%;background:#22c55e"></i></span></td></tr><tr><td><b>CM</b></td>
-    <td>Chiangmai <small class="dim">· Core S</small></td><td>Thanamet Pongpornkul</td>
-    <td class="num">54</td><td class="num">52</td>
-    <td class="num" style="color:#22c55e;font-weight:700">96.3%</td><td class="num up">▲ 61.1</td>
-    <td><span class="bar"><i style="width:98.06517311608961%;background:#22c55e"></i></span></td></tr><tr><td><b>FL</b></td>
-    <td>Fashion Island 2 <small class="dim">· Core L</small></td><td>Boondharika Kaweewon</td>
-    <td class="num">77</td><td class="num">74</td>
-    <td class="num" style="color:#22c55e;font-weight:700">96.1%</td><td class="num up">▲ 62.3</td>
-    <td><span class="bar"><i style="width:97.86150712830957%;background:#22c55e"></i></span></td></tr><tr><td><b>TR</b></td>
-    <td>Trang <small class="dim">· Core S</small></td><td>Thanamet Pongpornkul</td>
-    <td class="num">49</td><td class="num">47</td>
-    <td class="num" style="color:#22c55e;font-weight:700">95.9%</td><td class="num up">▲ 75.5</td>
-    <td><span class="bar"><i style="width:97.65784114052953%;background:#22c55e"></i></span></td></tr><tr><td><b>SC</b></td>
-    <td>Silom Complex <small class="dim">· Core S</small></td><td>Boondharika Kaweewon</td>
-    <td class="num">48</td><td class="num">46</td>
-    <td class="num" style="color:#22c55e;font-weight:700">95.8%</td><td class="num up">▲ 71.3</td>
-    <td><span class="bar"><i style="width:97.5560081466395%;background:#22c55e"></i></span></td></tr><tr><td><b>SH</b></td>
-    <td>Sriracha <small class="dim">· Core S</small></td><td>Yanapat Phothaworn</td>
-    <td class="num">47</td><td class="num">45</td>
-    <td class="num" style="color:#22c55e;font-weight:700">95.7%</td><td class="num up">▲ 80.8</td>
-    <td><span class="bar"><i style="width:97.45417515274949%;background:#22c55e"></i></span></td></tr><tr><td><b>SP</b></td>
-    <td>Suphanburi <small class="dim">· Core S</small></td><td>Duangduan Indee</td>
-    <td class="num">47</td><td class="num">45</td>
-    <td class="num" style="color:#22c55e;font-weight:700">95.7%</td><td class="num up">▲ 70.2</td>
-    <td><span class="bar"><i style="width:97.45417515274949%;background:#22c55e"></i></span></td></tr><tr><td><b>RR</b></td>
-    <td>Ratchaburi <small class="dim">· Core S</small></td><td>Duangduan Indee</td>
-    <td class="num">45</td><td class="num">43</td>
-    <td class="num" style="color:#22c55e;font-weight:700">95.6%</td><td class="num up">▲ 66.7</td>
-    <td><span class="bar"><i style="width:97.35234215885946%;background:#22c55e"></i></span></td></tr><tr><td><b>RE</b></td>
-    <td>Roi Et <small class="dim">· Core S</small></td><td>Auttapon Prichananon</td>
-    <td class="num">44</td><td class="num">42</td>
-    <td class="num" style="color:#22c55e;font-weight:700">95.5%</td><td class="num up">▲ 61.4</td>
-    <td><span class="bar"><i style="width:97.25050916496944%;background:#22c55e"></i></span></td></tr><tr><td><b>RH</b></td>
-    <td>Rama III <small class="dim">· Core M</small></td><td>Kittipong Sangcharoe</td>
-    <td class="num">64</td><td class="num">61</td>
-    <td class="num" style="color:#22c55e;font-weight:700">95.3%</td><td class="num up">▲ 73.8</td>
-    <td><span class="bar"><i style="width:97.0468431771894%;background:#22c55e"></i></span></td></tr><tr><td><b>PT</b></td>
-    <td>Phuket-CDS <small class="dim">· Core XL</small></td><td>Panat Pookpho</td>
-    <td class="num">124</td><td class="num">118</td>
-    <td class="num" style="color:#22c55e;font-weight:700">95.2%</td><td class="num up">▲ 76.2</td>
-    <td><span class="bar"><i style="width:96.94501018329939%;background:#22c55e"></i></span></td></tr><tr><td><b>KA</b></td>
-    <td>Kanchanaburi <small class="dim">· Affordable</small></td><td>Duangduan Indee</td>
-    <td class="num">40</td><td class="num">38</td>
-    <td class="num" style="color:#22c55e;font-weight:700">95.0%</td><td class="num up">▲ 57.5</td>
-    <td><span class="bar"><i style="width:96.74134419551935%;background:#22c55e"></i></span></td></tr><tr><td><b>AY</b></td>
-    <td>Ayutthaya <small class="dim">· Affordable</small></td><td>Duangduan Indee</td>
-    <td class="num">20</td><td class="num">19</td>
-    <td class="num" style="color:#22c55e;font-weight:700">95.0%</td><td class="num up">▲ 50.0</td>
-    <td><span class="bar"><i style="width:96.74134419551935%;background:#22c55e"></i></span></td></tr><tr><td><b>CO</b></td>
-    <td>Central World-CDS <small class="dim">· Flagship</small></td><td>Phassakorn Wasuwanic</td>
-    <td class="num">193</td><td class="num">183</td>
-    <td class="num" style="color:#22c55e;font-weight:700">94.8%</td><td class="num up">▲ 86.5</td>
-    <td><span class="bar"><i style="width:96.53767820773929%;background:#22c55e"></i></span></td></tr><tr><td><b>NH</b></td>
-    <td>Nakhon Pathom <small class="dim">· Core S</small></td><td>Kittipong Sangcharoe</td>
-    <td class="num">57</td><td class="num">54</td>
-    <td class="num" style="color:#22c55e;font-weight:700">94.7%</td><td class="num up">▲ 72.3</td>
-    <td><span class="bar"><i style="width:96.43584521384929%;background:#22c55e"></i></span></td></tr><tr><td><b>LA</b></td>
-    <td>Lampang <small class="dim">· Affordable</small></td><td>Thanamet Pongpornkul</td>
-    <td class="num">37</td><td class="num">35</td>
-    <td class="num" style="color:#22c55e;font-weight:700">94.6%</td><td class="num up">▲ 62.2</td>
-    <td><span class="bar"><i style="width:96.33401221995925%;background:#22c55e"></i></span></td></tr><tr><td><b>CB</b></td>
-    <td>Chonburi 1 <small class="dim">· Core M</small></td><td>Yanapat Phothaworn</td>
-    <td class="num">55</td><td class="num">52</td>
-    <td class="num" style="color:#22c55e;font-weight:700">94.5%</td><td class="num up">▲ 71.6</td>
-    <td><span class="bar"><i style="width:96.23217922606925%;background:#22c55e"></i></span></td></tr><tr><td><b>RY</b></td>
-    <td>Rayong <small class="dim">· Core S</small></td><td>Yanapat Phothaworn</td>
-    <td class="num">54</td><td class="num">51</td>
-    <td class="num" style="color:#22c55e;font-weight:700">94.4%</td><td class="num up">▲ 90.8</td>
-    <td><span class="bar"><i style="width:96.13034623217924%;background:#22c55e"></i></span></td></tr><tr><td><b>MS</b></td>
-    <td>Mae Sot <small class="dim">· Affordable</small></td><td>Duangduan Indee</td>
-    <td class="num">36</td><td class="num">34</td>
-    <td class="num" style="color:#22c55e;font-weight:700">94.4%</td><td class="num up">▲ 61.1</td>
-    <td><span class="bar"><i style="width:96.13034623217924%;background:#22c55e"></i></span></td></tr><tr><td><b>CS</b></td>
-    <td>Chachoengsao <small class="dim">· Core S</small></td><td>Yanapat Phothaworn</td>
-    <td class="num">35</td><td class="num">33</td>
-    <td class="num" style="color:#22c55e;font-weight:700">94.3%</td><td class="num up">▲ 77.6</td>
-    <td><span class="bar"><i style="width:96.02851323828921%;background:#22c55e"></i></span></td></tr><tr><td><b>MH</b></td>
-    <td>Mukdahan <small class="dim">· Affordable</small></td><td>Auttapon Prichananon</td>
-    <td class="num">35</td><td class="num">33</td>
-    <td class="num" style="color:#22c55e;font-weight:700">94.3%</td><td class="num up">▲ 77.2</td>
-    <td><span class="bar"><i style="width:96.02851323828921%;background:#22c55e"></i></span></td></tr><tr><td><b>BA</b></td>
-    <td>Bangrak-CDS <small class="dim">· Core S</small></td><td>Kittipong Sangcharoe</td>
-    <td class="num">51</td><td class="num">48</td>
-    <td class="num" style="color:#22c55e;font-weight:700">94.1%</td><td class="num up">▲ 74.5</td>
-    <td><span class="bar"><i style="width:95.82484725050917%;background:#22c55e"></i></span></td></tr><tr><td><b>CL</b></td>
-    <td>Chidlom <small class="dim">· Luxury Flagship</small></td><td>Phatcharee Tipmabutr</td>
-    <td class="num">187</td><td class="num">176</td>
-    <td class="num" style="color:#22c55e;font-weight:700">94.1%</td><td class="num up">▲ 86.6</td>
-    <td><span class="bar"><i style="width:95.82484725050917%;background:#22c55e"></i></span></td></tr><tr><td><b>KG</b></td>
-    <td>Kamphaeng Phet <small class="dim">· Affordable</small></td><td>Thanamet Pongpornkul</td>
-    <td class="num">33</td><td class="num">31</td>
-    <td class="num" style="color:#22c55e;font-weight:700">93.9%</td><td class="num up">▲ 72.0</td>
-    <td><span class="bar"><i style="width:95.62118126272912%;background:#22c55e"></i></span></td></tr><tr><td><b>SM</b></td>
-    <td>Samui <small class="dim">· Core S</small></td><td>Panat Pookpho</td>
-    <td class="num">49</td><td class="num">46</td>
-    <td class="num" style="color:#22c55e;font-weight:700">93.9%</td><td class="num up">▲ 74.3</td>
-    <td><span class="bar"><i style="width:95.62118126272912%;background:#22c55e"></i></span></td></tr><tr><td><b>CP</b></td>
-    <td>Chaiyaphum <small class="dim">· Affordable</small></td><td>Auttapon Prichananon</td>
-    <td class="num">32</td><td class="num">30</td>
-    <td class="num" style="color:#22c55e;font-weight:700">93.8%</td><td class="num up">▲ 50.0</td>
-    <td><span class="bar"><i style="width:95.5193482688391%;background:#22c55e"></i></span></td></tr><tr><td><b>LK</b></td>
-    <td>Suvarnabhumi <small class="dim">· Affordable</small></td><td>Yanapat Phothaworn</td>
-    <td class="num">31</td><td class="num">29</td>
-    <td class="num" style="color:#22c55e;font-weight:700">93.5%</td><td class="num up">▲ 77.4</td>
-    <td><span class="bar"><i style="width:95.21384928716904%;background:#22c55e"></i></span></td></tr><tr><td><b>HY</b></td>
-    <td>Hadyai-RBS <small class="dim">· Core S</small></td><td>Panat Pookpho</td>
-    <td class="num">45</td><td class="num">42</td>
-    <td class="num" style="color:#22c55e;font-weight:700">93.3%</td><td class="num up">▲ 37.7</td>
-    <td><span class="bar"><i style="width:95.010183299389%;background:#22c55e"></i></span></td></tr><tr><td><b>CX</b></td>
-    <td>Chalong <small class="dim">· Affordable</small></td><td>Panat Pookpho</td>
-    <td class="num">44</td><td class="num">41</td>
-    <td class="num" style="color:#22c55e;font-weight:700">93.2%</td><td class="num up">▲ 81.8</td>
-    <td><span class="bar"><i style="width:94.90835030549898%;background:#22c55e"></i></span></td></tr><tr><td><b>CR</b></td>
-    <td>Chantaburi <small class="dim">· Core S</small></td><td>Yanapat Phothaworn</td>
-    <td class="num">56</td><td class="num">52</td>
-    <td class="num" style="color:#22c55e;font-weight:700">92.9%</td><td class="num up">▲ 67.9</td>
-    <td><span class="bar"><i style="width:94.60285132382892%;background:#22c55e"></i></span></td></tr><tr><td><b>SK</b></td>
-    <td>Sakon Nakhon <small class="dim">· Affordable</small></td><td>Auttapon Prichananon</td>
-    <td class="num">41</td><td class="num">38</td>
-    <td class="num" style="color:#22c55e;font-weight:700">92.7%</td><td class="num up">▲ 65.9</td>
-    <td><span class="bar"><i style="width:94.39918533604889%;background:#22c55e"></i></span></td></tr><tr><td><b>LP</b></td>
-    <td>Lardprao <small class="dim">· Flagship</small></td><td>Wiboon Likkittamawon</td>
-    <td class="num">161</td><td class="num">149</td>
-    <td class="num" style="color:#22c55e;font-weight:700">92.5%</td><td class="num up">▲ 77.0</td>
-    <td><span class="bar"><i style="width:94.19551934826885%;background:#22c55e"></i></span></td></tr><tr><td><b>SV</b></td>
-    <td>Sukhumvit <small class="dim">· Core S</small></td><td>Auttapon Prichananon</td>
-    <td class="num">26</td><td class="num">24</td>
-    <td class="num" style="color:#22c55e;font-weight:700">92.3%</td><td class="num up">▲ 50.0</td>
-    <td><span class="bar"><i style="width:93.9918533604888%;background:#22c55e"></i></span></td></tr><tr><td><b>SR</b></td>
-    <td>Suratthani <small class="dim">· Core M</small></td><td>Thanamet Pongpornkul</td>
-    <td class="num">51</td><td class="num">47</td>
-    <td class="num" style="color:#22c55e;font-weight:700">92.2%</td><td class="num up">▲ 76.5</td>
-    <td><span class="bar"><i style="width:93.89002036659878%;background:#22c55e"></i></span></td></tr><tr><td><b>RS</b></td>
-    <td>Rangsit-CDS <small class="dim">· Core M</small></td><td>Suchart Chaimomgkol</td>
-    <td class="num">75</td><td class="num">69</td>
-    <td class="num" style="color:#22c55e;font-weight:700">92.0%</td><td class="num up">▲ 82.7</td>
-    <td><span class="bar"><i style="width:93.68635437881873%;background:#22c55e"></i></span></td></tr><tr><td><b>BC</b></td>
-    <td>Ban Chang <small class="dim">· Affordable</small></td><td>Yanapat Phothaworn</td>
-    <td class="num">25</td><td class="num">23</td>
-    <td class="num" style="color:#22c55e;font-weight:700">92.0%</td><td class="num up">▲ 60.0</td>
-    <td><span class="bar"><i style="width:93.68635437881873%;background:#22c55e"></i></span></td></tr><tr><td><b>TL</b></td>
-    <td>Thalang <small class="dim">· Affordable</small></td><td>Panat Pookpho</td>
-    <td class="num">35</td><td class="num">32</td>
-    <td class="num" style="color:#22c55e;font-weight:700">91.4%</td><td class="num up">▲ 47.6</td>
-    <td><span class="bar"><i style="width:93.07535641547861%;background:#22c55e"></i></span></td></tr><tr><td><b>LB</b></td>
-    <td>Lopburi <small class="dim">· Affordable</small></td><td>Auttapon Prichananon</td>
-    <td class="num">35</td><td class="num">32</td>
-    <td class="num" style="color:#22c55e;font-weight:700">91.4%</td><td class="num up">▲ 65.7</td>
-    <td><span class="bar"><i style="width:93.07535641547861%;background:#22c55e"></i></span></td></tr><tr><td><b>SB</b></td>
-    <td>Saraburi <small class="dim">· Core S</small></td><td>Auttapon Prichananon</td>
-    <td class="num">46</td><td class="num">42</td>
-    <td class="num" style="color:#22c55e;font-weight:700">91.3%</td><td class="num up">▲ 67.4</td>
-    <td><span class="bar"><i style="width:92.9735234215886%;background:#22c55e"></i></span></td></tr><tr><td><b>SS</b></td>
-    <td>Srisamarn <small class="dim">· Affordable</small></td><td>Duangduan Indee</td>
-    <td class="num">33</td><td class="num">30</td>
-    <td class="num" style="color:#22c55e;font-weight:700">90.9%</td><td class="num up">▲ 69.7</td>
-    <td><span class="bar"><i style="width:92.56619144602851%;background:#22c55e"></i></span></td></tr><tr><td><b>NT</b></td>
-    <td>Nakornsrithammarat 2 <small class="dim">· Core S</small></td><td>Panat Pookpho</td>
-    <td class="num">22</td><td class="num">20</td>
-    <td class="num" style="color:#22c55e;font-weight:700">90.9%</td><td class="num up">▲ 50.0</td>
-    <td><span class="bar"><i style="width:92.56619144602851%;background:#22c55e"></i></span></td></tr><tr><td><b>WV</b></td>
-    <td>Westville <small class="dim">· Core S</small></td><td>Suchart Chaimomgkol</td>
-    <td class="num">60</td><td class="num">54</td>
-    <td class="num" style="color:#22c55e;font-weight:700">90.0%</td><td class="num up">▲ 45.0</td>
-    <td><span class="bar"><i style="width:91.64969450101833%;background:#22c55e"></i></span></td></tr><tr><td><b>PC</b></td>
-    <td>Prachinburi <small class="dim">· Affordable</small></td><td>Yanapat Phothaworn</td>
-    <td class="num">27</td><td class="num">24</td>
-    <td class="num" style="color:#22c55e;font-weight:700">88.9%</td><td class="num up">▲ 70.4</td>
-    <td><span class="bar"><i style="width:90.52953156822811%;background:#22c55e"></i></span></td></tr><tr><td><b>BW</b></td>
-    <td>Bowin <small class="dim">· Affordable</small></td><td>Yanapat Phothaworn</td>
-    <td class="num">27</td><td class="num">24</td>
-    <td class="num" style="color:#22c55e;font-weight:700">88.9%</td><td class="num up">▲ 70.4</td>
-    <td><span class="bar"><i style="width:90.52953156822811%;background:#22c55e"></i></span></td></tr><tr><td><b>CT</b></td>
-    <td>Chaengwattana <small class="dim">· Core M</small></td><td>Suchart Chaimomgkol</td>
-    <td class="num">78</td><td class="num">69</td>
-    <td class="num" style="color:#22c55e;font-weight:700">88.5%</td><td class="num up">▲ 71.3</td>
-    <td><span class="bar"><i style="width:90.12219959266801%;background:#22c55e"></i></span></td></tr><tr><td><b>NZ</b></td>
-    <td>Nakhon Sawan <small class="dim">· Core S</small></td><td>Kittipong Sangcharoe</td>
-    <td class="num">60</td><td class="num">53</td>
-    <td class="num" style="color:#22c55e;font-weight:700">88.3%</td><td class="num up">▲ 60.0</td>
-    <td><span class="bar"><i style="width:89.91853360488797%;background:#22c55e"></i></span></td></tr><tr><td><b>ZR</b></td>
-    <td>Chonburi 2 <small class="dim">· Affordable</small></td><td>Yanapat Phothaworn</td>
-    <td class="num">25</td><td class="num">22</td>
-    <td class="num" style="color:#22c55e;font-weight:700">88.0%</td><td class="num up">▲ 52.0</td>
-    <td><span class="bar"><i style="width:89.61303462321793%;background:#22c55e"></i></span></td></tr><tr><td><b>RA</b></td>
-    <td>Rangsit-RBS <small class="dim">· Core M</small></td><td>Duangduan Indee</td>
-    <td class="num">48</td><td class="num">42</td>
-    <td class="num" style="color:#22c55e;font-weight:700">87.5%</td><td class="num up">▲ 54.2</td>
-    <td><span class="bar"><i style="width:89.10386965376782%;background:#22c55e"></i></span></td></tr><tr><td><b>AU</b></td>
-    <td>Ayutthaya 2 <small class="dim">· Affordable</small></td><td>Duangduan Indee</td>
-    <td class="num">37</td><td class="num">32</td>
-    <td class="num" style="color:#22c55e;font-weight:700">86.5%</td><td class="num up">▲ 51.4</td>
-    <td><span class="bar"><i style="width:88.08553971486761%;background:#22c55e"></i></span></td></tr><tr><td><b>KK</b></td>
-    <td>Khonkaen-CDS <small class="dim">· Core L</small></td><td>Suchart Chaimomgkol</td>
-    <td class="num">87</td><td class="num">74</td>
-    <td class="num" style="color:#22c55e;font-weight:700">85.1%</td><td class="num up">▲ 71.5</td>
-    <td><span class="bar"><i style="width:86.65987780040733%;background:#22c55e"></i></span></td></tr><tr><td><b>RI</b></td>
-    <td>Ramindra <small class="dim">· Affordable</small></td><td>Boondharika Kaweewon</td>
-    <td class="num">32</td><td class="num">26</td>
-    <td class="num" style="color:#22c55e;font-weight:700">81.3%</td><td class="num up">▲ 50.1</td>
-    <td><span class="bar"><i style="width:82.79022403258655%;background:#22c55e"></i></span></td></tr><tr><td><b>SA</b></td>
-    <td>Samut Prakan <small class="dim">· Affordable</small></td><td>Thanamet Pongpornkul</td>
-    <td class="num">31</td><td class="num">25</td>
-    <td class="num" style="color:#22c55e;font-weight:700">80.6%</td><td class="num up">▲ 77.4</td>
-    <td><span class="bar"><i style="width:82.07739307535641%;background:#22c55e"></i></span></td></tr><tr><td><b>R9</b></td>
-    <td>Rama 9-CDS <small class="dim">· Core L</small></td><td>Suchart Chaimomgkol</td>
-    <td class="num">72</td><td class="num">57</td>
-    <td class="num" style="color:#22c55e;font-weight:700">79.2%</td><td class="num up">▲ 65.7</td>
-    <td><span class="bar"><i style="width:80.65173116089613%;background:#22c55e"></i></span></td></tr><tr><td><b>RB</b></td>
-    <td>Ratchapruek <small class="dim">· Affordable</small></td><td>Thanamet Pongpornkul</td>
-    <td class="num">31</td><td class="num">20</td>
-    <td class="num" style="color:#22c55e;font-weight:700">64.5%</td><td class="num up">▲ 45.1</td>
-    <td><span class="bar"><i style="width:65.68228105906313%;background:#22c55e"></i></span></td></tr></tbody></table></div>
+    </tr></thead><tbody></tbody></table></div>
   </div>
 
   <!-- PEOPLE -->
@@ -467,616 +132,16 @@ small.dim{color:var(--mut);font-weight:400}
     <h2 style="margin-bottom:12px">รายบุคคล</h2>
     <div class="controls">
       <input type="text" id="pSearch" placeholder="ค้นหาชื่อ / team / role...">
-      <select id="pDM"><option value="">ทุก DM</option><option value="Auttapon Prichananon">Auttapon Prichananon</option><option value="Boondharika Kaweewon">Boondharika Kaweewon</option><option value="Buratuch Kochaplayuk">Buratuch Kochaplayuk</option><option value="Duangduan Indee">Duangduan Indee</option><option value="Kittipong Sangcharoe">Kittipong Sangcharoe</option><option value="Panat Pookpho">Panat Pookpho</option><option value="Phassakorn Wasuwanic">Phassakorn Wasuwanic</option><option value="Phatcharee Tipmabutr">Phatcharee Tipmabutr</option><option value="Suchart Chaimomgkol">Suchart Chaimomgkol</option><option value="Thanamet Pongpornkul">Thanamet Pongpornkul</option><option value="Wiboon Likkittamawon">Wiboon Likkittamawon</option><option value="Yanapat Phothaworn">Yanapat Phothaworn</option></select>
-      <select id="pStore"><option value="">ทุกสาขา</option><option value="AU">AU</option><option value="AY">AY</option><option value="BA">BA</option><option value="BC">BC</option><option value="BN">BN</option><option value="BU">BU</option><option value="BW">BW</option><option value="CB">CB</option><option value="CI">CI</option><option value="CL">CL</option><option value="CM">CM</option><option value="CO">CO</option><option value="CP">CP</option><option value="CR">CR</option><option value="CS">CS</option><option value="CT">CT</option><option value="CX">CX</option><option value="EV">EV</option><option value="FC">FC</option><option value="FH">FH</option><option value="FL">FL</option><option value="HY">HY</option><option value="JL">JL</option><option value="KA">KA</option><option value="KG">KG</option><option value="KK">KK</option><option value="KR">KR</option><option value="LA">LA</option><option value="LB">LB</option><option value="LK">LK</option><option value="LP">LP</option><option value="MC">MC</option><option value="MG">MG</option><option value="MH">MH</option><option value="MS">MS</option><option value="NH">NH</option><option value="NT">NT</option><option value="NZ">NZ</option><option value="PA">PA</option><option value="PB">PB</option><option value="PC">PC</option><option value="PK">PK</option><option value="PL">PL</option><option value="PT">PT</option><option value="PY">PY</option><option value="R2">R2</option><option value="R9">R9</option><option value="RA">RA</option><option value="RB">RB</option><option value="RE">RE</option><option value="RH">RH</option><option value="RI">RI</option><option value="RR">RR</option><option value="RS">RS</option><option value="RY">RY</option><option value="SA">SA</option><option value="SB">SB</option><option value="SC">SC</option><option value="SH">SH</option><option value="SK">SK</option><option value="SM">SM</option><option value="SP">SP</option><option value="SR">SR</option><option value="SS">SS</option><option value="SU">SU</option><option value="SV">SV</option><option value="SY">SY</option><option value="TL">TL</option><option value="TR">TR</option><option value="UD">UD</option><option value="UN">UN</option><option value="WG">WG</option><option value="WV">WV</option><option value="ZR">ZR</option></select>
+      <select id="pDM"><option value="">ทุก DM</option></select>
+      <select id="pStore"><option value="">ทุกสาขา</option></select>
       <select id="pStatus"><option value="">ทั้งหมด</option><option value="1">Login</option><option value="0">ยังไม่ login</option></select>
-      <span class="cnt" id="pCnt">4,324 คน</span>
+      <span class="cnt" id="pCnt"></span>
     </div>
     <div class="tablebox"><table id="pTable"><thead><tr>
       <th data-k="n">ชื่อ (Display)</th><th data-k="s">สาขา</th><th data-k="dm">District Manager</th>
       <th data-k="t">Team</th><th data-k="r">Role</th><th data-k="ll">Last login</th><th data-k="a">สถานะ</th>
-    </tr></thead><tbody><tr><td>WV_DM_Inventory Audit_Mawin</td>
-    <td>SY</td><td>Kittipong Sangcharoe</td><td>Inventory Audit,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:02:45</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>R9_DM_Operation Audit Department Manager_Jeng</td>
-    <td>R9</td><td>Suchart Chaimomgkol</td><td>Operation Audit,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 09:33:59</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>AU&amp;AY_DM_MKT_Pornsawan_(Baipor)</td>
-    <td>AU</td><td>Duangduan Indee</td><td>ส่งเสริมการขาย (Marketing),Personal shopper,DSM,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">15/06/2026 12:39:47</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>AU_DM_VM_GOLF </td>
-    <td>AU</td><td>Duangduan Indee</td><td>Display (Store VM),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 14:30:35</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Waraporn Kanniti</td>
-    <td>AU</td><td>Duangduan Indee</td><td>ห้องการเงินสาขา (Store Finance),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">15/06/2026 17:39:15</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>AU&amp;AY_DM_HRBP_BENZ</td>
-    <td>AU</td><td>Duangduan Indee</td><td>HRBP (ESC),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 07:23:45</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>AU-AY_DM_Loss Prevention_Nan</td>
-    <td>AU</td><td>Duangduan Indee</td><td>Loss Prevention,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:03:59</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>AY_DM_GR_NOI</td>
-    <td>AU</td><td>Duangduan Indee</td><td>Goods Receiving,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:17:04</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>(CT_Sales Staff_506_บอล)</td>
-    <td>CT</td><td>Suchart Chaimomgkol</td><td>004 - MEN,405 - MEN'S ACCESSORIES</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:30:27</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Tanakit Sathianpakithanakon</td>
-    <td>CB</td><td>Yanapat Phothaworn</td><td>Loss Prevention</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Nuchtida Jitnaree</td>
-    <td>PA</td><td>Panat Pookpho</td><td>504 - UNISEX SHOES,005 - YOUNG FASHION</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SY_AdminSMM_บาส</td>
-    <td>SY</td><td>Kittipong Sangcharoe</td><td>Admin (SMM),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:41:14</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Phalida Aipanya</td>
-    <td>CT</td><td>Suchart Chaimomgkol</td><td>302 - MISSY APPARELS,003 - WOMEN</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PT_Staff_906_Warawut Phuon_(ไปร์ท)</td>
-    <td>PT</td><td>Panat Pookpho</td><td>906 - KID'S SHOES,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:31:02</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Apisa Boonklem</td>
-    <td>CT</td><td>Suchart Chaimomgkol</td><td>003 - WOMEN,301 - YOUNG MISS APPARELS</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PT_Staff_506_Akarapon Yacharat_(Beer)</td>
-    <td>PT</td><td>Panat Pookpho</td><td>506 - GADGETS &amp; LIFESTYLE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 10:40:06</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Thanika Charoensuk</td>
-    <td>KG</td><td>Thanamet Pongpornkul</td><td>Cashier,Customer Service</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Najmee Deawosanung</td>
-    <td>PA</td><td>Panat Pookpho</td><td>504 - UNISEX SHOES,005 - YOUNG FASHION</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Sriwita Kuchita</td>
-    <td>CB</td><td>Yanapat Phothaworn</td><td>504 - UNISEX SHOES,005 - YOUNG FASHION</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PA_DM_MKT_Tong_Supawit</td>
-    <td>PA</td><td>Panat Pookpho</td><td>ส่งเสริมการขาย (Marketing),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 14:41:07</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Sitthichai Rattanaphum</td>
-    <td>PT</td><td>Panat Pookpho</td><td>Loss Prevention,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:45:53</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PA_CS_BIW_Porawit)</td>
-    <td>PA</td><td>Panat Pookpho</td><td>Customer Service,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:22:28</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Afanee Dunagphaphon</td>
-    <td>TL</td><td>Panat Pookpho</td><td>503 - SPORT FASHION,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:40:12</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Lalita Seenamaom</td>
-    <td>LK</td><td>Yanapat Phothaworn</td><td>703 - BATH/TOWELS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:04:33</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Kittipat Manmin</td>
-    <td>LB</td><td>Auttapon Prichananon</td><td>907 - TOYS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:08:44</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Sukanya Kanyati</td>
-    <td>RI</td><td>Boondharika Kaweewon</td><td>901 - BABY'S WEAR,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 11:56:12</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Oraphan Thothong</td>
-    <td>RI</td><td>Boondharika Kaweewon</td><td>706 - STORAGE &amp; EQUIPMENT,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:08:39</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Kanyanat Wongwaen</td>
-    <td>CB</td><td>Yanapat Phothaworn</td><td>301 - YOUNG MISS APPARELS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:42:36</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Ariyaporn Pattanawichaikul</td>
-    <td>CT</td><td>Suchart Chaimomgkol</td><td>003 - WOMEN,301 - YOUNG MISS APPARELS</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Sasin Chansawai</td>
-    <td>CB</td><td>Yanapat Phothaworn</td><td>007 - HOME,706 - STORAGE &amp; EQUIPMENT</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Chadawan Chaichain</td>
-    <td>BN</td><td>Kittipong Sangcharoe</td><td>Admin (AM),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 12:54:53</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Rh_staff_701 whashara poosinum_puh</td>
-    <td>RH</td><td>Kittipong Sangcharoe</td><td>707 - FURNITURE&amp;HOME DECORATIVE,702 - MATTRESS,DSM 007,007 - HOME,706 - STORAGE &amp; EQUIPMENT,703 - BATH/TOWELS,701 - BED LINEN,705 - KITCHEN &amp; DINING,708 - PURCHASE WITH PURCHASE,DSM,709 - HEALTH AND WELLNESS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:01:46</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PT_Staff_Admin SMM_กร</td>
-    <td>PT</td><td>Panat Pookpho</td><td>Admin (SMM),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:29:31</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Trikawin Kolaklit Napatpongsawat</td>
-    <td>CB</td><td>Yanapat Phothaworn</td><td>Admin (SMM)</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Panyarisa Bunthep</td>
-    <td>CB</td><td>Yanapat Phothaworn</td><td>Cashier,Customer Service</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Suchanan Philuek</td>
-    <td>PA</td><td>Panat Pookpho</td><td>KIS Beauty</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:39:01</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Chanunticha Pilunk</td>
-    <td>PA</td><td>Panat Pookpho</td><td>012 - STANDALONE,123 - MINI MONO</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Niratcha Niamchaona</td>
-    <td>PL</td><td>Thanamet Pongpornkul</td><td>Admin (AM),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:50:27</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Nanthiya Ritthichai</td>
-    <td>SH</td><td>Yanapat Phothaworn</td><td>Cashier,Customer Service,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:56:58</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SH_Staff_Oum</td>
-    <td>SH</td><td>Yanapat Phothaworn</td><td>303 - LINGERIE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:27:24</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Wunwisa Buransri</td>
-    <td>SM</td><td>Panat Pookpho</td><td>301 - YOUNG MISS APPARELS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:09:36</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Kanyarat Kaewluan  Earn</td>
-    <td>PA</td><td>Panat Pookpho</td><td>KIS Beauty</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:40:33</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Ekkarak Bunchuai</td>
-    <td>SM</td><td>Panat Pookpho</td><td>504 - UNISEX SHOES,005 - YOUNG FASHION</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Thanaporn Kaewkan</td>
-    <td>CT</td><td>Suchart Chaimomgkol</td><td>304 - WOMEN SHOES,003 - WOMEN</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Satida Rattanasripet</td>
-    <td>PT</td><td>Panat Pookpho</td><td>Customer Service,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:08:57</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Kamlai Arunwing</td>
-    <td>RA</td><td>Duangduan Indee</td><td>KIS Beauty,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:08:47</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Pornpon Sangprapai</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>402 - MEN'S BUSINESS,906 - KID'S SHOES,905 - KID'S ACCESSORIES,404 - MEN'S SHOES,902 - BABY'S ACCESSORIES,006 - LUXURY,012 - STANDALONE,903 - BABY'S FURNITURES,SMM,904 - KID'S WEAR,403 - MEN'S UNDERWEAR,SMM 009,901 - BABY'S WEAR,401 - MEN'S CASUAL,009 - BABY &amp; KIDS,SMM 012,004 - MEN,506 - GADGETS &amp; LIFESTYLE,907 - TOYS,SMM 004,SMM 006,405 - MEN'S ACCESSORIES,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">09/06/2026 19:15:47</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SM_CS_Jureewan Kaewjanthong</td>
-    <td>SM</td><td>Panat Pookpho</td><td>Click and Collect,Customer Service,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:54:04</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Duangporn Thongkiat</td>
-    <td>PA</td><td>Panat Pookpho</td><td>KIS Beauty</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:41:07</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Wanthana Praking</td>
-    <td>CB</td><td>Yanapat Phothaworn</td><td>003 - WOMEN,301 - YOUNG MISS APPARELS</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Sukanya Seehakhan</td>
-    <td>PB</td><td>Duangduan Indee</td><td>009 - BABY &amp; KIDS,907 - TOYS</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SY_STAFF_302_อุ้ม</td>
-    <td>SY</td><td>Kittipong Sangcharoe</td><td>302 - MISSY APPARELS,003 - WOMEN,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:19:14</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SY_STAFF_301_เซฟ</td>
-    <td>SY</td><td>Kittipong Sangcharoe</td><td>003 - WOMEN,301 - YOUNG MISS APPARELS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:16:21</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SY_STAFF_123_กัส</td>
-    <td>SY</td><td>Kittipong Sangcharoe</td><td>012 - STANDALONE,123 - MINI MONO,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 10:50:34</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Rakniran Phukphan</td>
-    <td>CT</td><td>Suchart Chaimomgkol</td><td>007 - HOME,706 - STORAGE &amp; EQUIPMENT,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 14:02:13</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Patraporn Phonglun</td>
-    <td>CT</td><td>Suchart Chaimomgkol</td><td>905 - KID'S ACCESSORIES,902 - BABY'S ACCESSORIES,009 - BABY &amp; KIDS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 13:41:17</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Kritsada Inchiad</td>
-    <td>CT</td><td>Suchart Chaimomgkol</td><td>111 - LUGGAGE,011 - FAMILY</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Nannaphat Jaiping</td>
-    <td>CT</td><td>Suchart Chaimomgkol</td><td>123 - MINI MONO,011 - FAMILY</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SU_ Staff_701,705,707_,ชนิสรา แก้วสว่าง(ใบตอง)</td>
-    <td>SU</td><td>Auttapon Prichananon</td><td>706 - STORAGE &amp; EQUIPMENT,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">15/06/2026 20:50:22</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>(Su_stoff_901,902หยก</td>
-    <td>SU</td><td>Auttapon Prichananon</td><td>902 - BABY'S ACCESSORIES,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">15/06/2026 12:24:38</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>(SU_Staff_304_ณนน)</td>
-    <td>SU</td><td>Auttapon Prichananon</td><td>304 - WOMEN SHOES,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:58:49</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Sasikan Somsuk</td>
-    <td>WG</td><td>Kittipong Sangcharoe</td><td>007 - HOME,706 - STORAGE &amp; EQUIPMENT</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Kawnruthai Wongjanthuk</td>
-    <td>WG</td><td>Kittipong Sangcharoe</td><td>007 - HOME,706 - STORAGE &amp; EQUIPMENT</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Jariya Phaisan</td>
-    <td>SC</td><td>Boondharika Kaweewon</td><td>804 - LINEN CARE,805 - PERSONAL CARE,707 - FURNITURE&amp;HOME DECORATIVE,906 - KID'S SHOES,702 - MATTRESS,905 - KID'S ACCESSORIES,902 - BABY'S ACCESSORIES,803 - HOME APPLIANCE,DSM 007,007 - HOME,DSM 011,706 - STORAGE &amp; EQUIPMENT,012 - STANDALONE,703 - BATH/TOWELS,903 - BABY'S FURNITURES,904 - KID'S WEAR,DSM 009,802 - BREAKFAST,901 - BABY'S WEAR,009 - BABY &amp; KIDS,DSM 012,806 - SMART HOME,701 - BED LINEN,807 - MAJOR APPLIANCE,705 - KITCHEN &amp; DINING,908 - GIFT SHOP,801 - KITCHEN APPLIANCES,DSM 008,008 - SMALL APPLIANCES,907 - TOYS,704 - HARDWARE,011 - FAMILY,708 - PURCHASE WITH PURCHASE,709 - HEALTH AND WELLNESS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:14:11</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>R2_DM_MKT_Sarawut Suwannatrai (Ble)</td>
-    <td>R2</td><td>Boondharika Kaweewon</td><td>ส่งเสริมการขาย (Marketing),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 08:46:03</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Chonlathorn Saengdow</td>
-    <td>LP</td><td>Wiboon Likkittamawon</td><td>DSM 007,007 - HOME,DSM 008,008 - SMALL APPLIANCES,704 - HARDWARE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 14:38:34</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Jukkaphong Pakpian</td>
-    <td>CB</td><td>Yanapat Phothaworn</td><td>005 - YOUNG FASHION,503 - SPORT FASHION</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Ananata Saelee</td>
-    <td>WV</td><td>Suchart Chaimomgkol</td><td>705 - KITCHEN &amp; DINING,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:13:18</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>WV_STAFF_SKACHER_natnicha_sea</td>
-    <td>WV</td><td>Suchart Chaimomgkol</td><td>504 - UNISEX SHOES,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:29:25</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Thawanrat Jumpasri</td>
-    <td>CT</td><td>Suchart Chaimomgkol</td><td>304 - WOMEN SHOES,003 - WOMEN</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Aumboon Tharanat</td>
-    <td>CT</td><td>Suchart Chaimomgkol</td><td>007 - HOME,706 - STORAGE &amp; EQUIPMENT</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Panupong Suetung</td>
-    <td>CT</td><td>Suchart Chaimomgkol</td><td>903 - BABY'S FURNITURES,009 - BABY &amp; KIDS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 13:53:16</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Rachadaporn Priamsatja</td>
-    <td>CT</td><td>Suchart Chaimomgkol</td><td>903 - BABY'S FURNITURES,009 - BABY &amp; KIDS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 13:50:11</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Thanakorn Munpiyamit</td>
-    <td>CT</td><td>Suchart Chaimomgkol</td><td>404 - MEN'S SHOES,004 - MEN</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PT_Senior_Sandro_Nuttha_แซนด์</td>
-    <td>PT</td><td>Panat Pookpho</td><td>304 - WOMEN SHOES,302 - MISSY APPARELS,305 - HANDBAGS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:34:08</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Fhafun Monyou</td>
-    <td>R9</td><td>Suchart Chaimomgkol</td><td>402 - MEN'S BUSINESS,403 - MEN'S UNDERWEAR,401 - MEN'S CASUAL,004 - MEN,123 - MINI MONO,DSM 004,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:46:16</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>MG_DM_CS_ตอง</td>
-    <td>MG</td><td>Boondharika Kaweewon</td><td>Customer Service,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:53:54</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Yupha Daeunchaem</td>
-    <td>SH</td><td>Yanapat Phothaworn</td><td>ส่งเสริมการขาย (Marketing),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:42:56</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Tiger Vongnoi</td>
-    <td>BN</td><td>Kittipong Sangcharoe</td><td>504 - UNISEX SHOES,005 - YOUNG FASHION,505 - YOUNG FASHION ACCESSORIES,503 - SPORT FASHION,502 - STREET FASHION,ทุกคนในสาขา</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>TL _staff Nike Thananporn</td>
-    <td>TL</td><td>Panat Pookpho</td><td>005 - YOUNG FASHION,503 - SPORT FASHION,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:06:15</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Areena Thepsuwan</td>
-    <td>PA</td><td>Panat Pookpho</td><td>906 - KID'S SHOES,905 - KID'S ACCESSORIES,902 - BABY'S ACCESSORIES,904 - KID'S WEAR,901 - BABY'S WEAR</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PT_STAFF_904_TAK</td>
-    <td>PT</td><td>Panat Pookpho</td><td>904 - KID'S WEAR,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:51:01</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Chutikan Sooksawat</td>
-    <td>SM</td><td>Panat Pookpho</td><td>401 - MEN'S CASUAL,004 - MEN</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Thanachai Limcharoen</td>
-    <td>PY</td><td>Kittipong Sangcharoe</td><td>402 - MEN'S BUSINESS,404 - MEN'S SHOES,202 - SMART WATCHES,204 - SERVICE,403 - MEN'S UNDERWEAR,401 - MEN'S CASUAL,201 - TRADITIONAL WATCHES,DSM,405 - MEN'S ACCESSORIES,DSM 004</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:41:46</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>KR_DSM_DENIM_BEE</td>
-    <td>KR</td><td>Suchart Chaimomgkol</td><td>DSM 005,504 - UNISEX SHOES,501 - DENIM,005 - YOUNG FASHION,012 - STANDALONE,505 - YOUNG FASHION ACCESSORIES,503 - SPORT FASHION,502 - STREET FASHION,DSM 012,123 - MINI MONO,708 - PURCHASE WITH PURCHASE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:21:56</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>LP_DSM_907_Dao</td>
-    <td>LP</td><td>Wiboon Likkittamawon</td><td>906 - KID'S SHOES,905 - KID'S ACCESSORIES,012 - STANDALONE,121 - SANRIO GIFT GATE,904 - KID'S WEAR,DSM 009,009 - BABY &amp; KIDS,DSM 012,122 - ZEENZONE,907 - TOYS,DSM,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:28:17</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>LP_DSM_301,501_GAME</td>
-    <td>LP</td><td>Wiboon Likkittamawon</td><td>DSM 005,DSM 003,501 - DENIM,005 - YOUNG FASHION,003 - WOMEN,301 - YOUNG MISS APPARELS,DSM,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:54:04</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>MC_DSM_009_แอน</td>
-    <td>MC</td><td>Duangduan Indee</td><td>906 - KID'S SHOES,905 - KID'S ACCESSORIES,902 - BABY'S ACCESSORIES,012 - STANDALONE,121 - SANRIO GIFT GATE,903 - BABY'S FURNITURES,904 - KID'S WEAR,125 - JUST BUY,DSM 009,901 - BABY'S WEAR,009 - BABY &amp; KIDS,DSM 012,124 - KOMONOYA,908 - GIFT SHOP,122 - ZEENZONE,123 - MINI MONO,907 - TOYS,DSM,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:39:27</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>R2_Staff_HRBP_Sakda Parito(Big)</td>
-    <td>R2</td><td>Boondharika Kaweewon</td><td>HRBP (ESC),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 11:10:36</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Nawarat Simngam</td>
-    <td>RY</td><td>Yanapat Phothaworn</td><td>123 - MINI MONO,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 14:36:41</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Tidathip Bangphimai</td>
-    <td>RY</td><td>Yanapat Phothaworn</td><td>123 - MINI MONO,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:29:41</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Chaowarit Woradi</td>
-    <td>RA</td><td>Duangduan Indee</td><td>402 - MEN'S BUSINESS,401 - MEN'S CASUAL,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:36:22</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Suthida Silawan</td>
-    <td>BA</td><td>Kittipong Sangcharoe</td><td>703 - BATH/TOWELS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:18:37</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PT Staff 705  Malaiphon Yingnakhon การ์ฟิว</td>
-    <td>PT</td><td>Panat Pookpho</td><td>706 - STORAGE &amp; EQUIPMENT,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:00:47</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Natthaphum Wongsisahwat</td>
-    <td>CS</td><td>Yanapat Phothaworn</td><td>008 - SMALL APPLIANCES,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:16:32</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Jeeranan Sonsit</td>
-    <td>PL</td><td>Thanamet Pongpornkul</td><td>Admin (SMM),Inventory Audit,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 09:05:24</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>KA_STAFF_SALE_ARM</td>
-    <td>KA</td><td>Duangduan Indee</td><td>907 - TOYS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">30/04/2026 11:31:13</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Pipop Silaon</td>
-    <td>SU</td><td>Auttapon Prichananon</td><td>804 - LINEN CARE,805 - PERSONAL CARE,803 - HOME APPLIANCE,802 - BREAKFAST,806 - SMART HOME,807 - MAJOR APPLIANCE,801 - KITCHEN APPLIANCES,008 - SMALL APPLIANCES,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">16/06/2026 17:34:45</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>TL_DM_MKT_ริศา</td>
-    <td>TL</td><td>Panat Pookpho</td><td>Display (Store VM),ส่งเสริมการขาย (Marketing),Store social,Omni Channel Operations,Service Ambassador,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:47:11</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PT_staff_Thaisouvanir_ฟาร์</td>
-    <td>PT</td><td>Panat Pookpho</td><td>114 - THAI SOUVENIR,011 - FAMILY,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:02:40</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>KA_STAFF_SALE_</td>
-    <td>KA</td><td>Duangduan Indee</td><td>706 - STORAGE &amp; EQUIPMENT,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:43:05</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>UD_STAFF_SANRIO_HIGH</td>
-    <td>UD</td><td>Suchart Chaimomgkol</td><td>906 - KID'S SHOES,905 - KID'S ACCESSORIES,902 - BABY'S ACCESSORIES,903 - BABY'S FURNITURES,904 - KID'S WEAR,901 - BABY'S WEAR,009 - BABY &amp; KIDS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">05/05/2026 23:13:35</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Manuchet Pekhunthod</td>
-    <td>UD</td><td>Suchart Chaimomgkol</td><td>111 - LUGGAGE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:57:14</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SY_STAFF_GR_บิ๊ก</td>
-    <td>SY</td><td>Kittipong Sangcharoe</td><td>Goods Receiving,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 11:54:41</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Kanyarat Singtothong</td>
-    <td>SM</td><td>Panat Pookpho</td><td>005 - YOUNG FASHION,503 - SPORT FASHION</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>BU_DM_MKT_ตุ๊กตา</td>
-    <td>BU</td><td>Auttapon Prichananon</td><td>ส่งเสริมการขาย (Marketing),Personal shopper,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:51:01</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>UD_CS_Sub dept_FAH</td>
-    <td>UD</td><td>Suchart Chaimomgkol</td><td>Customer Service,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:43:27</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Chayada Auisophon</td>
-    <td>TL</td><td>Panat Pookpho</td><td>003 - WOMEN,305 - HANDBAGS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:56:07</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>HY_AdminSMM_Black</td>
-    <td>HY</td><td>Panat Pookpho</td><td>Admin (SMM),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:56:45</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>CT_Sales Staff_123_Oum</td>
-    <td>CT</td><td>Suchart Chaimomgkol</td><td>123 - MINI MONO,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:33:42</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Chariya Senarat</td>
-    <td>TL</td><td>Panat Pookpho</td><td>007 - HOME,706 - STORAGE &amp; EQUIPMENT,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:56:22</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Hadsanai Ainkho</td>
-    <td>PT</td><td>Panat Pookpho</td><td>007 - HOME,706 - STORAGE &amp; EQUIPMENT</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SM_Staff_FN_MUI</td>
-    <td>SM</td><td>Panat Pookpho</td><td>ห้องการเงินสาขา (Store Finance),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:21:27</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>CT _ Sales Staff _ 707 _ Ta Tar</td>
-    <td>CT</td><td>Suchart Chaimomgkol</td><td>707 - FURNITURE&amp;HOME DECORATIVE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">23/04/2026 14:46:11</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PK_STAFF_GR_โต้ง</td>
-    <td>PK</td><td>Buratuch Kochaplayuk</td><td>Goods Receiving,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 08:04:48</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Janthima Phiwsamang</td>
-    <td>SM</td><td>Panat Pookpho</td><td>504 - UNISEX SHOES,005 - YOUNG FASHION</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:32:27</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>CO_SA_TrendShop_Tum</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>122 - ZEENZONE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">24/04/2026 13:59:16</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PA_Staff_504_ฟัรฮาน</td>
-    <td>PA</td><td>Panat Pookpho</td><td>503 - SPORT FASHION,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:09:42</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Witchuda Chaloenchai</td>
-    <td>CB</td><td>Yanapat Phothaworn</td><td>O2O Champion,ส่งเสริมการขาย (Marketing),DMM,Store social,Personal shopper,E-ordering champion,Omni Channel Operations,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:44:04</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PK_STAFF_Stoesocial_Fay</td>
-    <td>PK</td><td>Buratuch Kochaplayuk</td><td>Store social,Omni Channel Operations,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">30/05/2026 13:38:45</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SC_Safft_Adidas_Pachcharapa</td>
-    <td>SC</td><td>Boondharika Kaweewon</td><td>503 - SPORT FASHION,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:02:51</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SC_Small Appliance_Burapa</td>
-    <td>SC</td><td>Boondharika Kaweewon</td><td>008 - SMALL APPLIANCES,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:33:45</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SC_Safft_Smiggle_Jib</td>
-    <td>SC</td><td>Boondharika Kaweewon</td><td>122 - ZEENZONE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:06:42</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SC_Defry01 Men_Mook</td>
-    <td>SC</td><td>Boondharika Kaweewon</td><td>301 - YOUNG MISS APPARELS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:05:49</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SC_Staff_301_น้ำฝน</td>
-    <td>SC</td><td>Boondharika Kaweewon</td><td>301 - YOUNG MISS APPARELS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 13:52:10</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SC_Staff_301_ซาร่า</td>
-    <td>SC</td><td>Boondharika Kaweewon</td><td>301 - YOUNG MISS APPARELS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:49:15</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>MG_Staff_123_อ้อน</td>
-    <td>MG</td><td>Boondharika Kaweewon</td><td>123 - MINI MONO,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:16:19</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>CL_Staff_503_Kong</td>
-    <td>CL</td><td>Phatcharee Tipmabutr</td><td>005 - YOUNG FASHION,503 - SPORT FASHION,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">13/05/2026 13:59:46</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Su_Staff_301_พั้นช์</td>
-    <td>SU</td><td>Auttapon Prichananon</td><td>302 - MISSY APPARELS,003 - WOMEN,301 - YOUNG MISS APPARELS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:14:26</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PA_Staff_503_ปุ้ม</td>
-    <td>PA</td><td>Panat Pookpho</td><td>503 - SPORT FASHION,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:24:12</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Sasipha Kaeoaudom</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>KIS Beauty,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">07/05/2026 11:10:07</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>CO 907 Thatphong Munpholsri Ball</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>905 - KID'S ACCESSORIES,902 - BABY'S ACCESSORIES,012 - STANDALONE,121 - SANRIO GIFT GATE,903 - BABY'S FURNITURES,904 - KID'S WEAR,125 - JUST BUY,901 - BABY'S WEAR,009 - BABY &amp; KIDS,124 - KOMONOYA,908 - GIFT SHOP,122 - ZEENZONE,123 - MINI MONO,907 - TOYS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">27/04/2026 14:15:19</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Basura Sama</td>
-    <td>CX</td><td>Panat Pookpho</td><td>401 - MEN'S CASUAL,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:47:40</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>(PT_Staff_Yong MlNl MONO )อาลิซา โตะมิง</td>
-    <td>PT</td><td>Panat Pookpho</td><td>123 - MINI MONO,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:47:19</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PT_Staff_008_แชมป์</td>
-    <td>PT</td><td>Panat Pookpho</td><td>804 - LINEN CARE,805 - PERSONAL CARE,803 - HOME APPLIANCE,802 - BREAKFAST,806 - SMART HOME,807 - MAJOR APPLIANCE,801 - KITCHEN APPLIANCES,008 - SMALL APPLIANCES,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">06/05/2026 13:51:57</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Naphitsara Thingyop</td>
-    <td>PT</td><td>Panat Pookpho</td><td>304 - WOMEN SHOES,003 - WOMEN</td><td></td><td style="color:#8a9bb0">—</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>CL_Staff_GR_อาร์ต</td>
-    <td>CL</td><td>Phatcharee Tipmabutr</td><td>Goods Receiving,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">16/06/2026 14:06:18</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>พี่ปอง dsm</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>DSM 007,007 - HOME,706 - STORAGE &amp; EQUIPMENT,705 - KITCHEN &amp; DINING,123 - MINI MONO,DSM 008,008 - SMALL APPLIANCES,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:45:03</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Co_staff_Women’Shoes_ Num</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>304 - WOMEN SHOES,302 - MISSY APPARELS,306 - WOMEN SPORTWEAR,003 - WOMEN,307 - WOMEN ACCESSORIES,303 - LINGERIE,301 - YOUNG MISS APPARELS,305 - HANDBAGS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">24/04/2026 11:11:00</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PT_Staff_121_Cream</td>
-    <td>PT</td><td>Panat Pookpho</td><td>121 - SANRIO GIFT GATE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:24:47</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PK_STAFF_006_Phet</td>
-    <td>PK</td><td>Buratuch Kochaplayuk</td><td>006 - LUXURY,604 - SECOND-HANDED LUXURY,601 - WOMEN LUXURY,603 - KIDS LUXURY,605 - TOM FORD,602 - MEN LUXURY,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 12:33:46</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Ruttanakorn Padee</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>006 - LUXURY,604 - SECOND-HANDED LUXURY,601 - WOMEN LUXURY,603 - KIDS LUXURY,605 - TOM FORD,602 - MEN LUXURY,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">27/04/2026 10:36:55</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PT_DSM_008,907_เจต</td>
-    <td>PT</td><td>Panat Pookpho</td><td>804 - LINEN CARE,805 - PERSONAL CARE,803 - HOME APPLIANCE,DSM 009,802 - BREAKFAST,009 - BABY &amp; KIDS,806 - SMART HOME,Personal shopper,807 - MAJOR APPLIANCE,801 - KITCHEN APPLIANCES,DSM 008,008 - SMALL APPLIANCES,907 - TOYS,DSM,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:24:53</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PT_MKT_จิ๊บ</td>
-    <td>PT</td><td>Panat Pookpho</td><td>ส่งเสริมการขาย (Marketing),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:32:31</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>BC_staff_adidas_kaning</td>
-    <td>BC</td><td>Yanapat Phothaworn</td><td>111 - LUGGAGE,011 - FAMILY,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:26:47</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Maneerat Channual</td>
-    <td>CB</td><td>Yanapat Phothaworn</td><td>905 - KID'S ACCESSORIES,902 - BABY'S ACCESSORIES,012 - STANDALONE,121 - SANRIO GIFT GATE,903 - BABY'S FURNITURES,904 - KID'S WEAR,125 - JUST BUY,901 - BABY'S WEAR,009 - BABY &amp; KIDS,124 - KOMONOYA,908 - GIFT SHOP,122 - ZEENZONE,123 - MINI MONO,907 - TOYS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">24/04/2026 10:36:08</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Boonyarat Sittisasitorn</td>
-    <td>RY</td><td>Yanapat Phothaworn</td><td>Cashier,Customer Service,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">16/04/2026 19:35:42</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Maytavee Aksornchuen</td>
-    <td>CB</td><td>Yanapat Phothaworn</td><td>503 - SPORT FASHION,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:57:05</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SR_STAFF_700_KORN</td>
-    <td>SR</td><td>Thanamet Pongpornkul</td><td>908 - GIFT SHOP,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">06/05/2026 10:25:40</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SU_ADMIN_KOY</td>
-    <td>SU</td><td>Auttapon Prichananon</td><td>Admin (SMM),Admin (AMU),Inventory Audit,Admin (AM),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:49:16</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PY_staff_Nike904 _Sirirat(รัตน์)Naknual</td>
-    <td>PY</td><td>Kittipong Sangcharoe</td><td>904 - KID'S WEAR,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:34:19</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>BN_STAFF_UNISEX SHOES _EMMY</td>
-    <td>BN</td><td>Kittipong Sangcharoe</td><td>005 - YOUNG FASHION,306 - WOMEN SPORTWEAR,503 - SPORT FASHION,003 - WOMEN,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:55:48</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Chittanut Hongphumee</td>
-    <td>RS</td><td>Suchart Chaimomgkol</td><td>Loss Prevention,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">16/04/2026 16:33:47</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Co_staff_kisbeauty_aum</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>KIS Beauty,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">30/04/2026 15:15:52</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PY_staff_Nike904_chirathit (บี) Thuprom </td>
-    <td>PY</td><td>Kittipong Sangcharoe</td><td>904 - KID'S WEAR,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">29/04/2026 15:54:37</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>CO_Staff_Kis_Malasri</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>KIS Beauty,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">16/06/2026 22:05:35</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PY_Staff_904_มิ้นท์</td>
-    <td>PY</td><td>Kittipong Sangcharoe</td><td>904 - KID'S WEAR,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:29:46</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>CX_Staff_woman_Pla</td>
-    <td>CX</td><td>Panat Pookpho</td><td>304 - WOMEN SHOES,302 - MISSY APPARELS,306 - WOMEN SPORTWEAR,003 - WOMEN,307 - WOMEN ACCESSORIES,303 - LINGERIE,301 - YOUNG MISS APPARELS,305 - HANDBAGS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:06:38</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PT_Staff_Mini Mono_Nasrin_(นัส)Ramanbaka</td>
-    <td>PT</td><td>Panat Pookpho</td><td>123 - MINI MONO,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:26:08</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Pimpa Tabklang</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>006 - LUXURY,604 - SECOND-HANDED LUXURY,601 - WOMEN LUXURY,603 - KIDS LUXURY,605 - TOM FORD,602 - MEN LUXURY,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">12/05/2026 17:40:32</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SM_Staff_KIS_Pawinee Pankerd por</td>
-    <td>SM</td><td>Panat Pookpho</td><td>102 - MASS,101 - PRESTIGE,104 - BEAUTY ACCESSORIES,002 - WATCHES &amp; JEWELRY,001 - BEAUTY,KIS Beauty,103 - FRAGRANCE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:10:34</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>FC_Staff_304_Rodsbenz</td>
-    <td>FC</td><td>Suchart Chaimomgkol</td><td>304 - WOMEN SHOES,307 - WOMEN ACCESSORIES,305 - HANDBAGS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">21/05/2026 19:57:14</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PY_STAFF_KIS_MAY</td>
-    <td>PY</td><td>Kittipong Sangcharoe</td><td>KIS Beauty,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:11:42</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>CL_GR_PATTY</td>
-    <td>LP</td><td>Wiboon Likkittamawon</td><td>Goods Receiving,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">29/05/2026 20:32:51</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PT_Staff_kis_ Beauty_hananee_nena</td>
-    <td>PT</td><td>Panat Pookpho</td><td>KIS Beauty,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 12:53:55</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PT_Staff_401,402,111_ ฟา</td>
-    <td>PT</td><td>Panat Pookpho</td><td>402 - MEN'S BUSINESS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 12:16:59</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SR_RBS_304_Sai</td>
-    <td>SR</td><td>Thanamet Pongpornkul</td><td>304 - WOMEN SHOES,302 - MISSY APPARELS,306 - WOMEN SPORTWEAR,003 - WOMEN,307 - WOMEN ACCESSORIES,303 - LINGERIE,301 - YOUNG MISS APPARELS,305 - HANDBAGS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:22:45</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>MH_Staff_705_เต๋อ</td>
-    <td>MH</td><td>Auttapon Prichananon</td><td>707 - FURNITURE&amp;HOME DECORATIVE,702 - MATTRESS,706 - STORAGE &amp; EQUIPMENT,703 - BATH/TOWELS,701 - BED LINEN,705 - KITCHEN &amp; DINING,704 - HARDWARE,709 - HEALTH AND WELLNESS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:24:35</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Amornrat Pipong</td>
-    <td>RH</td><td>Kittipong Sangcharoe</td><td>ส่งเสริมการขาย (Marketing),Cashier,Customer Service,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 11:50:11</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Worawaran Rayapsri</td>
-    <td>MG</td><td>Boondharika Kaweewon</td><td>905 - KID'S ACCESSORIES,902 - BABY'S ACCESSORIES,012 - STANDALONE,121 - SANRIO GIFT GATE,903 - BABY'S FURNITURES,904 - KID'S WEAR,125 - JUST BUY,901 - BABY'S WEAR,009 - BABY &amp; KIDS,124 - KOMONOYA,908 - GIFT SHOP,122 - ZEENZONE,123 - MINI MONO,907 - TOYS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">16/04/2026 19:58:42</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>CB_staff_ccs_nim</td>
-    <td>CB</td><td>Yanapat Phothaworn</td><td>Cashier,Customer Service,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:22:45</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>10166-KK-Weeradet Tongtip Toss </td>
-    <td>KK</td><td>Suchart Chaimomgkol</td><td>908 - GIFT SHOP,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">27/05/2026 15:11:15</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Warunee Chaleomchai</td>
-    <td>CR</td><td>Yanapat Phothaworn</td><td>012 - STANDALONE,121 - SANRIO GIFT GATE,125 - JUST BUY,124 - KOMONOYA,122 - ZEENZONE,123 - MINI MONO,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 13:51:17</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>TL_Staff_007_การ์ด</td>
-    <td>TL</td><td>Panat Pookpho</td><td>707 - FURNITURE&amp;HOME DECORATIVE,702 - MATTRESS,706 - STORAGE &amp; EQUIPMENT,703 - BATH/TOWELS,701 - BED LINEN,705 - KITCHEN &amp; DINING,704 - HARDWARE,708 - PURCHASE WITH PURCHASE,709 - HEALTH AND WELLNESS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 14:19:31</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>(WV_staff_Sport_Preeyanan Sriprachan_A)</td>
-    <td>WV</td><td>Suchart Chaimomgkol</td><td>503 - SPORT FASHION,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:26:15</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>UD_CS_Sub dept_JIEJIE</td>
-    <td>UD</td><td>Suchart Chaimomgkol</td><td>ส่งเสริมการขาย (Marketing),Cashier,Customer Service,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:43:29</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>UD_Staff_GR_คิม</td>
-    <td>UD</td><td>Suchart Chaimomgkol</td><td>Goods Receiving,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:17:02</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>LP_Sales Staff_705_nueng</td>
-    <td>LP</td><td>Wiboon Likkittamawon</td><td>908 - GIFT SHOP,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">27/04/2026 10:26:01</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SS_Staff_Sport Fashion (Nike)_ke</td>
-    <td>SS</td><td>Duangduan Indee</td><td>005 - YOUNG FASHION,306 - WOMEN SPORTWEAR,503 - SPORT FASHION,003 - WOMEN,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">30/04/2026 11:44:11</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>CO_Staff_EVISU_Zoom</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>501 - DENIM,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">23/04/2026 15:41:12</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Nareemah Singra</td>
-    <td>R9</td><td>Suchart Chaimomgkol</td><td>KIS Beauty,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:44:43</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>MS_Staff_Toys _kade</td>
-    <td>MS</td><td>Duangduan Indee</td><td>905 - KID'S ACCESSORIES,902 - BABY'S ACCESSORIES,012 - STANDALONE,121 - SANRIO GIFT GATE,903 - BABY'S FURNITURES,904 - KID'S WEAR,125 - JUST BUY,901 - BABY'S WEAR,009 - BABY &amp; KIDS,124 - KOMONOYA,908 - GIFT SHOP,122 - ZEENZONE,123 - MINI MONO,907 - TOYS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:58:17</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Pimnada Sakhunveerapat</td>
-    <td>R9</td><td>Suchart Chaimomgkol</td><td>Admin (SMM),007 - HOME,006 - LUXURY,005 - YOUNG FASHION,012 - STANDALONE,009 - BABY &amp; KIDS,003 - WOMEN,004 - MEN,008 - SMALL APPLIANCES,011 - FAMILY,002 - WATCHES &amp; JEWELRY,001 - BEAUTY,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 11:39:30</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PC_Staff_111_นัท</td>
-    <td>PC</td><td>Yanapat Phothaworn</td><td>111 - LUGGAGE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:02:13</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>LB_Staff_103_Pakboong</td>
-    <td>LB</td><td>Auttapon Prichananon</td><td>001 - BEAUTY,103 - FRAGRANCE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 11:06:45</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PY_staff_Defry904_Napaporn(ฝ้าย)Hanchana</td>
-    <td>PY</td><td>Kittipong Sangcharoe</td><td>904 - KID'S WEAR,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:32:59</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>WG_staff_123_jame</td>
-    <td>WG</td><td>Kittipong Sangcharoe</td><td>124 - KOMONOYA,123 - MINI MONO,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">27/04/2026 18:57:36</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Pagamas Boonmak</td>
-    <td>R9</td><td>Suchart Chaimomgkol</td><td>901 - BABY'S WEAR,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">27/04/2026 12:00:38</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Visit Plianchai</td>
-    <td>RH</td><td>Kittipong Sangcharoe</td><td>005 - YOUNG FASHION,306 - WOMEN SPORTWEAR,503 - SPORT FASHION,003 - WOMEN,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">11/06/2026 18:43:46</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SB_Phatnarin_ Mom&amp;Kids  (หมิว)</td>
-    <td>SB</td><td>Auttapon Prichananon</td><td>907 - TOYS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">15/06/2026 22:37:57</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>FC_Staff_705_Jakkit</td>
-    <td>FC</td><td>Suchart Chaimomgkol</td><td>707 - FURNITURE&amp;HOME DECORATIVE,706 - STORAGE &amp; EQUIPMENT,705 - KITCHEN &amp; DINING,704 - HARDWARE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/04/2026 17:47:02</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Orawan Rupkhom</td>
-    <td>NH</td><td>Kittipong Sangcharoe</td><td>KIS Beauty,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:45:08</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PT_Staff_121_bear</td>
-    <td>PT</td><td>Panat Pookpho</td><td>012 - STANDALONE,121 - SANRIO GIFT GATE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:51:45</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>LP_DSM_004,005_RED</td>
-    <td>LP</td><td>Wiboon Likkittamawon</td><td>DSM 005,404 - MEN'S SHOES,005 - YOUNG FASHION,505 - YOUNG FASHION ACCESSORIES,401 - MEN'S CASUAL,004 - MEN,506 - GADGETS &amp; LIFESTYLE,DSM,DSM 004,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:08:35</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>FH_DM_safety_tar</td>
-    <td>FH</td><td>Panat Pookpho</td><td>Loss Prevention,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:34:13</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>BU_Staff_KIS_202_อ้อม</td>
-    <td>BU</td><td>Auttapon Prichananon</td><td>202 - SMART WATCHES,KIS Beauty,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:14:53</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>EV_Sales Staff_303_Ning</td>
-    <td>EV</td><td>Boondharika Kaweewon</td><td>003 - WOMEN,303 - LINGERIE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:36:10</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PK_DM_Safety_Pear</td>
-    <td>PK</td><td>Buratuch Kochaplayuk</td><td>Loss Prevention,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 12:50:24</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Nawakan Singngol</td>
-    <td>SK</td><td>Auttapon Prichananon</td><td>304 - WOMEN SHOES,003 - WOMEN,301 - YOUNG MISS APPARELS,305 - HANDBAGS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">29/04/2026 11:38:57</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Natdanai Jhamsoon</td>
-    <td>NZ</td><td>Kittipong Sangcharoe</td><td>007 - HOME,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:35:01</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Nattapong Kengjring</td>
-    <td>NH</td><td>Kittipong Sangcharoe</td><td>402 - MEN'S BUSINESS,404 - MEN'S SHOES,403 - MEN'S UNDERWEAR,401 - MEN'S CASUAL,004 - MEN,405 - MEN'S ACCESSORIES,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:26:52</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Phurit Klomkangplu</td>
-    <td>PY</td><td>Kittipong Sangcharoe</td><td>005 - YOUNG FASHION,306 - WOMEN SPORTWEAR,503 - SPORT FASHION,003 - WOMEN,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:20:09</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Phanthila Naphanat</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>202 - SMART WATCHES,204 - SERVICE,201 - TRADITIONAL WATCHES,203 - FINE JEWELRY,002 - WATCHES &amp; JEWELRY,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">24/04/2026 15:14:41</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>KK_Staff_Central Home_Iu</td>
-    <td>KK</td><td>Suchart Chaimomgkol</td><td>908 - GIFT SHOP</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:37:05</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>CO_STAFF_LUXURY_NUT</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>202 - SMART WATCHES,204 - SERVICE,201 - TRADITIONAL WATCHES,203 - FINE JEWELRY,002 - WATCHES &amp; JEWELRY,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/05/2026 19:11:33</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>NH_Staff_904_รี่</td>
-    <td>NH</td><td>Kittipong Sangcharoe</td><td>906 - KID'S SHOES,121 - SANRIO GIFT GATE,125 - JUST BUY,124 - KOMONOYA,908 - GIFT SHOP,122 - ZEENZONE,123 - MINI MONO,907 - TOYS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:40:20</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>CL_Staff_907_กาโต่ย</td>
-    <td>CL</td><td>Phatcharee Tipmabutr</td><td>009 - BABY &amp; KIDS,907 - TOYS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">27/04/2026 15:12:48</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PL_staff_sport fashion_บี๋</td>
-    <td>PL</td><td>Thanamet Pongpornkul</td><td>503 - SPORT FASHION,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:33:50</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Napat Pevjantun</td>
-    <td>RA</td><td>Duangduan Indee</td><td>KIS Beauty,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:38:58</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SM_Staff_O&amp;M_Aphichat Chuaitang</td>
-    <td>SM</td><td>Panat Pookpho</td><td>O&amp;M,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:13:14</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>CS_Staff_Ccs(Fon)</td>
-    <td>CS</td><td>Yanapat Phothaworn</td><td>Cashier,Customer Service,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 12:44:02</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Kumpol Kaewsawang</td>
-    <td>EV</td><td>Boondharika Kaweewon</td><td>Goods Receiving,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 10:31:22</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Thanyanit Thapthong</td>
-    <td>NZ</td><td>Kittipong Sangcharoe</td><td>Store social,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 13:01:40</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Phattraporn Maithong</td>
-    <td>LP</td><td>Wiboon Likkittamawon</td><td>Customer Service,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">24/04/2026 15:01:42</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Nattharika Laklaem</td>
-    <td>CB</td><td>Yanapat Phothaworn</td><td>Cashier,Customer Service,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:50:31</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Burintanee Chantapoon</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>HRBP (ESC),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:22:36</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>FH_Staff__Bath/Towel_Murnee มูณี </td>
-    <td>FH</td><td>Panat Pookpho</td><td>703 - BATH/TOWELS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:17:18</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Supaporn Chanpueng</td>
-    <td>NH</td><td>Kittipong Sangcharoe</td><td>401 - MEN'S CASUAL,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:28:17</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>WG_staff_503_บีน</td>
-    <td>WG</td><td>Kittipong Sangcharoe</td><td>005 - YOUNG FASHION,503 - SPORT FASHION,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:54:36</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>DT_DSM_Noom</td>
-    <td>SC</td><td>Boondharika Kaweewon</td><td>DSM 001,006 - LUXURY,601 - WOMEN LUXURY,DSM 006,101 - PRESTIGE,603 - KIDS LUXURY,001 - BEAUTY,DSM,602 - MEN LUXURY,103 - FRAGRANCE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:04:56</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>co_staff_Womenbags_Fern</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>304 - WOMEN SHOES,003 - WOMEN,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">24/04/2026 10:25:52</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Chondarong Wayuphak</td>
-    <td>FL</td><td>Boondharika Kaweewon</td><td>401 - MEN'S CASUAL,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:14:31</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SM_Staff_901+904_Somruethai Prapwichti</td>
-    <td>SM</td><td>Panat Pookpho</td><td>905 - KID'S ACCESSORIES,904 - KID'S WEAR,901 - BABY'S WEAR,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:55:58</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Jenjira Duangphon</td>
-    <td>CR</td><td>Yanapat Phothaworn</td><td>903 - BABY'S FURNITURES,904 - KID'S WEAR,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 13:48:49</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Chonlada Nasuan</td>
-    <td>CR</td><td>Yanapat Phothaworn</td><td>302 - MISSY APPARELS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 13:58:11</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Co_Staff_603_Maria Naktawee</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>006 - LUXURY,604 - SECOND-HANDED LUXURY,601 - WOMEN LUXURY,603 - KIDS LUXURY,605 - TOM FORD,602 - MEN LUXURY,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">23/04/2026 14:23:29</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>FL_STAFF_303_NANNY</td>
-    <td>FL</td><td>Boondharika Kaweewon</td><td>304 - WOMEN SHOES,302 - MISSY APPARELS,306 - WOMEN SPORTWEAR,003 - WOMEN,307 - WOMEN ACCESSORIES,303 - LINGERIE,301 - YOUNG MISS APPARELS,305 - HANDBAGS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:19:55</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SM_Staff_O&amp;M_ Nu</td>
-    <td>SM</td><td>Panat Pookpho</td><td>O&amp;M,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:08:16</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Nattayaporn Makying</td>
-    <td>NH</td><td>Kittipong Sangcharoe</td><td>304 - WOMEN SHOES,302 - MISSY APPARELS,306 - WOMEN SPORTWEAR,003 - WOMEN,307 - WOMEN ACCESSORIES,303 - LINGERIE,301 - YOUNG MISS APPARELS,305 - HANDBAGS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:15:53</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Somporn Wongnarin</td>
-    <td>WV</td><td>Suchart Chaimomgkol</td><td>302 - MISSY APPARELS,301 - YOUNG MISS APPARELS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:44:36</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SM_Staff_O&amp;M_Warayut Chumai</td>
-    <td>SM</td><td>Panat Pookpho</td><td>O&amp;M,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:17:01</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>WV_Staff_CS_เข็ม</td>
-    <td>WV</td><td>Suchart Chaimomgkol</td><td>Customer Service,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:28:49</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Chakkathorn Khongsang</td>
-    <td>R9</td><td>Suchart Chaimomgkol</td><td>402 - MEN'S BUSINESS,404 - MEN'S SHOES,403 - MEN'S UNDERWEAR,401 - MEN'S CASUAL,004 - MEN,405 - MEN'S ACCESSORIES,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">18/04/2026 14:56:16</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>CL_Staff_303_ดรีม</td>
-    <td>CL</td><td>Phatcharee Tipmabutr</td><td>003 - WOMEN,303 - LINGERIE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">19/05/2026 20:04:15</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PT_Staff_Thaisouvanir_ฝน</td>
-    <td>PT</td><td>Panat Pookpho</td><td>114 - THAI SOUVENIR,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:23:49</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>FC_STAFF_121_FAH</td>
-    <td>FC</td><td>Suchart Chaimomgkol</td><td>121 - SANRIO GIFT GATE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">07/05/2026 18:47:41</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>RR_Sales Staff_704_Bew</td>
-    <td>RR</td><td>Duangduan Indee</td><td>804 - LINEN CARE,805 - PERSONAL CARE,707 - FURNITURE&amp;HOME DECORATIVE,702 - MATTRESS,113 - ELDERLY,803 - HOME APPLIANCE,007 - HOME,114 - THAI SOUVENIR,706 - STORAGE &amp; EQUIPMENT,012 - STANDALONE,703 - BATH/TOWELS,121 - SANRIO GIFT GATE,115 - HOBBIES,112 - PETS,111 - LUGGAGE,125 - JUST BUY,802 - BREAKFAST,806 - SMART HOME,701 - BED LINEN,807 - MAJOR APPLIANCE,124 - KOMONOYA,705 - KITCHEN &amp; DINING,122 - ZEENZONE,801 - KITCHEN APPLIANCES,123 - MINI MONO,008 - SMALL APPLIANCES,704 - HARDWARE,011 - FAMILY,708 - PURCHASE WITH PURCHASE,116 - FOOD &amp; BEVERAGE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">06/06/2026 17:19:23</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>RBSCB Jirasak</td>
-    <td>CB</td><td>Yanapat Phothaworn</td><td>005 - YOUNG FASHION,306 - WOMEN SPORTWEAR,503 - SPORT FASHION,003 - WOMEN,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:51:59</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>BC_DM_MKT_Cherdklao_(Bozo) Sakdapreecha</td>
-    <td>BC</td><td>Yanapat Phothaworn</td><td>ส่งเสริมการขาย (Marketing),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:46:51</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Phiyada Phengphit</td>
-    <td>LP</td><td>Wiboon Likkittamawon</td><td>ห้องการเงินสาขา (Store Finance),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">28/05/2026 17:29:07</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>EV_sales Staff_Kis Beauty_Wilairat(Mind)</td>
-    <td>EV</td><td>Boondharika Kaweewon</td><td>KIS Beauty,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:03:42</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Sirisopa Jantaket</td>
-    <td>EV</td><td>Boondharika Kaweewon</td><td>003 - WOMEN,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:06:04</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td> EV_SalesStaff_Natthaphong(Jay)</td>
-    <td>EV</td><td>Boondharika Kaweewon</td><td>908 - GIFT SHOP,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:02:48</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Siriphen Wanlayangkun</td>
-    <td>EV</td><td>Boondharika Kaweewon</td><td>304 - WOMEN SHOES,302 - MISSY APPARELS,306 - WOMEN SPORTWEAR,003 - WOMEN,307 - WOMEN ACCESSORIES,303 - LINGERIE,301 - YOUNG MISS APPARELS,305 - HANDBAGS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:53:38</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Nanthiya Pholphitak</td>
-    <td>MG</td><td>Boondharika Kaweewon</td><td>401 - MEN'S CASUAL,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:05:27</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>WV_Staff_121_เกว</td>
-    <td>WV</td><td>Suchart Chaimomgkol</td><td>121 - SANRIO GIFT GATE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 13:35:06</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Wanida Upasu</td>
-    <td>MG</td><td>Boondharika Kaweewon</td><td>703 - BATH/TOWELS,701 - BED LINEN,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:33:13</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Phuchit Panchai</td>
-    <td>EV</td><td>Boondharika Kaweewon</td><td>113 - ELDERLY,504 - UNISEX SHOES,501 - DENIM,114 - THAI SOUVENIR,005 - YOUNG FASHION,012 - STANDALONE,121 - SANRIO GIFT GATE,115 - HOBBIES,112 - PETS,111 - LUGGAGE,125 - JUST BUY,505 - YOUNG FASHION ACCESSORIES,503 - SPORT FASHION,502 - STREET FASHION,124 - KOMONOYA,122 - ZEENZONE,123 - MINI MONO,506 - GADGETS &amp; LIFESTYLE,011 - FAMILY,116 - FOOD &amp; BEVERAGE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:15:12</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Marisa Seechanngam</td>
-    <td>MG</td><td>Boondharika Kaweewon</td><td>906 - KID'S SHOES,905 - KID'S ACCESSORIES,902 - BABY'S ACCESSORIES,012 - STANDALONE,121 - SANRIO GIFT GATE,903 - BABY'S FURNITURES,904 - KID'S WEAR,125 - JUST BUY,901 - BABY'S WEAR,009 - BABY &amp; KIDS,124 - KOMONOYA,908 - GIFT SHOP,122 - ZEENZONE,123 - MINI MONO,907 - TOYS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:05:07</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Jintapha Phaengnoi</td>
-    <td>MG</td><td>Boondharika Kaweewon</td><td>905 - KID'S ACCESSORIES,009 - BABY &amp; KIDS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/04/2026 12:54:56</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Tawan Saengchan</td>
-    <td>EV</td><td>Boondharika Kaweewon</td><td>804 - LINEN CARE,805 - PERSONAL CARE,707 - FURNITURE&amp;HOME DECORATIVE,702 - MATTRESS,113 - ELDERLY,803 - HOME APPLIANCE,007 - HOME,114 - THAI SOUVENIR,706 - STORAGE &amp; EQUIPMENT,012 - STANDALONE,703 - BATH/TOWELS,121 - SANRIO GIFT GATE,115 - HOBBIES,112 - PETS,111 - LUGGAGE,125 - JUST BUY,802 - BREAKFAST,806 - SMART HOME,701 - BED LINEN,807 - MAJOR APPLIANCE,124 - KOMONOYA,705 - KITCHEN &amp; DINING,122 - ZEENZONE,801 - KITCHEN APPLIANCES,123 - MINI MONO,008 - SMALL APPLIANCES,704 - HARDWARE,011 - FAMILY,708 - PURCHASE WITH PURCHASE,116 - FOOD &amp; BEVERAGE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 14:47:53</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>EV_Sales_706_นัท</td>
-    <td>EV</td><td>Boondharika Kaweewon</td><td>908 - GIFT SHOP,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:53:09</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PA_Staff_102_ฟ้า</td>
-    <td>PA</td><td>Panat Pookpho</td><td>KIS Beauty,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 14:31:32</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>CO_StreetFashion_Ape</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>006 - LUXURY,604 - SECOND-HANDED LUXURY,601 - WOMEN LUXURY,603 - KIDS LUXURY,605 - TOM FORD,602 - MEN LUXURY,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">29/04/2026 15:26:53</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>CO_Staff_Luxury_it</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>006 - LUXURY,604 - SECOND-HANDED LUXURY,601 - WOMEN LUXURY,603 - KIDS LUXURY,605 - TOM FORD,602 - MEN LUXURY,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">30/04/2026 16:04:51</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>CL_AdminSMM_ใบเฟิร์น</td>
-    <td>CL</td><td>Phatcharee Tipmabutr</td><td>Admin (SMM),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 09:44:34</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PY_DM_SAFETY_Phawin (RJ)</td>
-    <td>PY</td><td>Kittipong Sangcharoe</td><td>Loss Prevention,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 18:09:03</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>NH_ Staff_905_บิ๊ก</td>
-    <td>NH</td><td>Kittipong Sangcharoe</td><td>905 - KID'S ACCESSORIES,009 - BABY &amp; KIDS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:29:25</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>CT_DM_Safety &amp; Risk Management_ฝ้าย</td>
-    <td>CT</td><td>Suchart Chaimomgkol</td><td>Loss Prevention,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 10:51:21</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Noona Staff Sandro</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>302 - MISSY APPARELS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">24/04/2026 14:34:27</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Lp_PS_Omni_Chamint</td>
-    <td>LP</td><td>Wiboon Likkittamawon</td><td>Store social,Personal shopper,Omni Channel Operations,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">11/06/2026 18:48:52</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>UD_DM_Safety_ปุ๊ก</td>
-    <td>UD</td><td>Suchart Chaimomgkol</td><td>Loss Prevention,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:05:54</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Siraprapha Thongnimit</td>
-    <td>AU</td><td>Duangduan Indee</td><td>ห้องการเงินสาขา (Store Finance),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">27/05/2026 17:00:59</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Kanokwan Bunkoed</td>
-    <td>PC</td><td>Yanapat Phothaworn</td><td>804 - LINEN CARE,805 - PERSONAL CARE,707 - FURNITURE&amp;HOME DECORATIVE,702 - MATTRESS,113 - ELDERLY,803 - HOME APPLIANCE,007 - HOME,114 - THAI SOUVENIR,706 - STORAGE &amp; EQUIPMENT,012 - STANDALONE,703 - BATH/TOWELS,121 - SANRIO GIFT GATE,115 - HOBBIES,112 - PETS,111 - LUGGAGE,125 - JUST BUY,802 - BREAKFAST,806 - SMART HOME,701 - BED LINEN,807 - MAJOR APPLIANCE,124 - KOMONOYA,705 - KITCHEN &amp; DINING,122 - ZEENZONE,801 - KITCHEN APPLIANCES,123 - MINI MONO,008 - SMALL APPLIANCES,704 - HARDWARE,011 - FAMILY,708 - PURCHASE WITH PURCHASE,116 - FOOD &amp; BEVERAGE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:18:38</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Nathawat Nutadee</td>
-    <td>CB</td><td>Yanapat Phothaworn</td><td>Cashier,Customer Service,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:49:28</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Duangjan Tassamee</td>
-    <td>RS</td><td>Suchart Chaimomgkol</td><td>703 - BATH/TOWELS,701 - BED LINEN,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:37:42</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Bra Advisor POP</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>303 - LINGERIE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">25/04/2026 15:05:05</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Amonrat Chanklad</td>
-    <td>SH</td><td>Yanapat Phothaworn</td><td>Store social,Omni Channel Operations,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 14:45:42</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>WG Staff Small App ซีดี</td>
-    <td>WG</td><td>Kittipong Sangcharoe</td><td>707 - FURNITURE&amp;HOME DECORATIVE,702 - MATTRESS,007 - HOME,703 - BATH/TOWELS,701 - BED LINEN,704 - HARDWARE,708 - PURCHASE WITH PURCHASE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:52:21</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>TL_Staff_902_แสบ</td>
-    <td>TL</td><td>Panat Pookpho</td><td>902 - BABY'S ACCESSORIES,009 - BABY &amp; KIDS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:35:34</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>BA_Staff_sanrio_JEAN</td>
-    <td>BA</td><td>Kittipong Sangcharoe</td><td>121 - SANRIO GIFT GATE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:21:57</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>FL_DM_PS_KANYARAT</td>
-    <td>FL</td><td>Boondharika Kaweewon</td><td>Personal shopper,Omni Channel Operations,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 10:42:49</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>พัฒนพล ยอดราช CO</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>303 - LINGERIE,301 - YOUNG MISS APPARELS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">28/05/2026 23:53:12</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Surabadin Summat</td>
-    <td>BN</td><td>Kittipong Sangcharoe</td><td>Goods Receiving,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:54:57</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PA_Staff_503_นาย</td>
-    <td>PA</td><td>Panat Pookpho</td><td>504 - UNISEX SHOES,005 - YOUNG FASHION,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:01:13</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Bn_Staff_GR_Beer</td>
-    <td>BN</td><td>Kittipong Sangcharoe</td><td>Goods Receiving,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:09:30</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>RR_AdminSMM_Sawitree</td>
-    <td>RR</td><td>Duangduan Indee</td><td>Admin (SMM),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:19:43</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Phattarawadee Ketkaew</td>
-    <td>CX</td><td>Panat Pookpho</td><td>906 - KID'S SHOES,121 - SANRIO GIFT GATE,125 - JUST BUY,124 - KOMONOYA,908 - GIFT SHOP,122 - ZEENZONE,123 - MINI MONO,907 - TOYS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:06:33</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Kamonwan Kongjam</td>
-    <td>MG</td><td>Boondharika Kaweewon</td><td>903 - BABY'S FURNITURES,904 - KID'S WEAR,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:10:43</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>THANYAPORN RODNIL</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>Admin (SMM),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">15/06/2026 12:33:34</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>FH_Staff_Social media_Gookkee</td>
-    <td>FH</td><td>Panat Pookpho</td><td>Store social,Omni Channel Operations,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 10:00:43</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>CO_staff.504_BigM_Witthawat kpk</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>006 - LUXURY,604 - SECOND-HANDED LUXURY,601 - WOMEN LUXURY,603 - KIDS LUXURY,605 - TOM FORD,602 - MEN LUXURY,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">23/04/2026 18:22:57</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>MC_DM_CASHROOM_SARA</td>
-    <td>MC</td><td>Duangduan Indee</td><td>ห้องการเงินสาขา (Store Finance),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 11:56:15</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PA_STAFF_GR_Arziz_Thanayut Chitauea</td>
-    <td>PA</td><td>Panat Pookpho</td><td>Goods Receiving,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 09:05:19</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Nopparat Suksawang</td>
-    <td>NZ</td><td>Kittipong Sangcharoe</td><td>007 - HOME,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">15/06/2026 15:52:32</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>TR_Satff_KisBeauty_Por</td>
-    <td>TR</td><td>Thanamet Pongpornkul</td><td>012 - STANDALONE,121 - SANRIO GIFT GATE,125 - JUST BUY,124 - KOMONOYA,122 - ZEENZONE,123 - MINI MONO,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:34:24</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Co-เจ้าหน้าที่การเงิน-ปอ</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>ห้องการเงินสาขา (Store Finance),ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">11/06/2026 16:57:09</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>KR_Staff_AdminSMM_Air</td>
-    <td>KR</td><td>Suchart Chaimomgkol</td><td>Admin (SMM),Store social,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:26:39</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Montipat Hoosakul</td>
-    <td>CL</td><td>Phatcharee Tipmabutr</td><td>Personal shopper,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 12:32:05</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>MC_Sale Staff_Beauty_Nin</td>
-    <td>MC</td><td>Duangduan Indee</td><td>001 - BEAUTY,103 - FRAGRANCE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 17:27:46</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>FH_KIS_Siphalak(Tonaor) Wiwattananonpong</td>
-    <td>FH</td><td>Panat Pookpho</td><td>KIS Beauty,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 11:46:59</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>PY_Staf_DAIDAS_Nawarat(แป้ง)Bunlo</td>
-    <td>PY</td><td>Kittipong Sangcharoe</td><td>402 - MEN'S BUSINESS,404 - MEN'S SHOES,403 - MEN'S UNDERWEAR,401 - MEN'S CASUAL,004 - MEN,405 - MEN'S ACCESSORIES,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 15:59:54</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Piyanuch Boonyor</td>
-    <td>EV</td><td>Boondharika Kaweewon</td><td>007 - HOME,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 14:17:52</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Jarupat Tanawatphoonin</td>
-    <td>NZ</td><td>Kittipong Sangcharoe</td><td>007 - HOME,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 14:40:21</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>น้องวี</td>
-    <td>CR</td><td>Yanapat Phothaworn</td><td>005 - YOUNG FASHION,306 - WOMEN SPORTWEAR,503 - SPORT FASHION,003 - WOMEN,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 14:24:43</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>Chiraphong Thianthong</td>
-    <td>FL</td><td>Boondharika Kaweewon</td><td>111 - LUGGAGE,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:05:43</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>SY_STAFF_304,305_จอย</td>
-    <td>SY</td><td>Kittipong Sangcharoe</td><td>304 - WOMEN SHOES,003 - WOMEN,305 - HANDBAGS,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 13:03:32</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>BA_staff_Men's casual_Koy</td>
-    <td>BA</td><td>Kittipong Sangcharoe</td><td>402 - MEN'S BUSINESS,404 - MEN'S SHOES,403 - MEN'S UNDERWEAR,401 - MEN'S CASUAL,004 - MEN,405 - MEN'S ACCESSORIES,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:50:41</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>CO_Staff_705,706_Ni</td>
-    <td>CO</td><td>Phassakorn Wasuwanic</td><td>908 - GIFT SHOP,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 16:52:51</td>
-    <td><span class="pill yes">✓ login</span></td></tr><tr><td>KR_Staff_Sporty fashion _JAMES</td>
-    <td>KR</td><td>Suchart Chaimomgkol</td><td>005 - YOUNG FASHION,503 - SPORT FASHION,ทุกคนในสาขา</td><td>Store Staff</td><td style="color:#8a9bb0">17/06/2026 13:09:05</td>
-    <td><span class="pill yes">✓ login</span></td></tr></tbody></table></div>
-    <div class="muted" id="pNote">แสดง 300 จาก 4,324 รายการ</div>
+    </tr></thead><tbody></tbody></table></div>
+    <div class="muted" id="pNote"></div>
   </div>
 </div>
 <div class="toast" id="toast"></div>
@@ -1283,7 +348,11 @@ trendMode.onchange=()=>{fillTrendEntity();renderTrend();};
 trendEntity.onchange=renderTrend;
 
 // ---------- master render ----------
-function render(){renderKPI();fillStoreDM();fillPeopleSel();fillTrendEntity();renderTrend();renderDM();renderStore();renderPeople();}
+function fillExportStore(){const sel=document.getElementById('exportStore');const cur=sel.value;
+  sel.innerHTML='<option value="">— เลือกสาขาเพื่อ export —</option>';
+  [...history[current].stores].sort((a,b)=>a.store>b.store?1:-1).forEach(x=>sel.add(new Option(x.store+' · '+(x.name||''),x.store)));
+  sel.value=[...sel.options].some(o=>o.value===cur)?cur:'';}
+function render(){renderKPI();fillStoreDM();fillPeopleSel();fillTrendEntity();fillExportStore();renderTrend();renderDM();renderStore();renderPeople();}
 
 // tabs
 const views={trend:trendView,dm:dmView,store:storeView,people:peopleView};
@@ -1295,12 +364,39 @@ document.getElementById('importBtn').onclick=()=>fileIn.click();
 fileIn.onchange=e=>{importFiles([...e.target.files]);fileIn.value='';};
 document.getElementById('daySel').onchange=e=>{current=e.target.value;render();};
 document.getElementById('clearBtn').onclick=()=>{if(confirm('ล้างประวัติที่นำเข้าเอง แล้วเหลือเฉพาะวันฐาน (16-17/06/2026)?')){localStorage.removeItem(LSKEY);history={};peopleCache={};seed();current=days().slice(-1)[0];buildDaySel();render();toast('ล้างประวัติแล้ว');}};
-document.getElementById('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(history)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='oneconnect_history.json';a.click();};
+document.getElementById('exportInactiveBtn').onclick=()=>{
+  const iso=current,ppl=peopleCache[iso];
+  const pick=document.getElementById('exportStore').value;
+  if(!pick){toast('กรุณาเลือกสาขาก่อน export');document.getElementById('exportStore').focus();return;}
+  if(!ppl){toast('ไม่มีข้อมูลรายบุคคลของวันที่เลือก (มีเฉพาะวันฐาน/วันที่นำเข้าในเซสชันนี้)');return;}
+  const all=pick==='__ALL__';
+  let inact=ppl.filter(p=>!p.a&&(all||p.s===pick)).sort((a,b)=>a.s===b.s?(a.n>b.n?1:-1):(a.s>b.s?1:-1));
+  if(!inact.length){toast(all?'วันนี้ active ครบทุกคน 🎉':'สาขา '+pick+' active ครบทุกคน 🎉');return;}
+  // sheet 1: รายชื่อคนยังไม่ active
+  const head=['สาขา','ชื่อสาขา','District Manager','Display name','Team','Role'];
+  const aoa=[head];
+  inact.forEach(p=>{const nm=(AMAP[p.s]&&AMAP[p.s].name)||p.s;aoa.push([p.s,nm,p.dm,p.n,p.t,p.r]);});
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols']=[{wch:8},{wch:22},{wch:24},{wch:28},{wch:24},{wch:22}];
+  ws['!autofilter']={ref:'A1:F'+aoa.length};
+  const s=history[iso];
+  const sum=[['สาขา','ชื่อสาขา','District Manager','User','Active','ยังไม่ active','% ยังไม่ active']];
+  s.stores.filter(x=>all||x.store===pick).sort((a,b)=>(b.total-b.login)-(a.total-a.login)).forEach(x=>{
+    const na=x.total-x.login;sum.push([x.store,x.name,x.dm,x.total,x.login,na,+(na/x.total*100).toFixed(1)]);});
+  const ws2=XLSX.utils.aoa_to_sheet(sum);
+  ws2['!cols']=[{wch:8},{wch:22},{wch:24},{wch:8},{wch:8},{wch:12},{wch:14}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'ยังไม่ active');
+  XLSX.utils.book_append_sheet(wb,ws2,'สรุปรายสาขา');
+  const tag=all?'ALL':pick;
+  XLSX.writeFile(wb,'not_active_'+tag+'_'+iso.replace(/-/g,'')+'.xlsx');
+  toast('Export '+inact.length+' คน · '+(all?'ทุกสาขา':'สาขา '+pick)+' · '+thaiDate(iso));
+};
 document.getElementById('restoreBtn').onclick=()=>restoreIn.click();
 restoreIn.onchange=e=>{const f=e.target.files[0];if(!f)return;const fr=new FileReader();fr.onload=ev=>{try{const h=JSON.parse(ev.target.result);history={...history,...h};saveHistory();buildDaySel();current=days().slice(-1)[0];render();toast('กู้คืนประวัติแล้ว');}catch(err){toast('ไฟล์ไม่ถูกต้อง');}};fr.readAsText(f);restoreIn.value='';};
 
 // init
 loadHistory();seed();current=days().slice(-1)[0];buildDaySel();render();
 </script>
-
-</body></html>
+</body>
+</html>

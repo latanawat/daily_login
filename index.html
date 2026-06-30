@@ -51,6 +51,7 @@ small.dim{color:var(--mut);font-weight:400}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#22314a;border:1px solid var(--line);padding:12px 20px;border-radius:10px;font-size:13px;display:none;z-index:50}
 .chartwrap{position:relative}
 .daypicker{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut)}
+.updated{color:var(--mut);font-size:12px}
 </style>
 </head>
 <body>
@@ -60,7 +61,7 @@ small.dim{color:var(--mut);font-weight:400}
 <div class="topbar">
   <button class="btn" id="importBtn">+ นำเข้าไฟล์รายวัน (.xlsx)</button>
   <input type="file" id="fileIn" accept=".xlsx" style="display:none" multiple>
-  <div class="daypicker">แสดงข้อมูลวันที่: <select id="daySel"></select></div>
+  <div class="daypicker">แสดงข้อมูลวันที่: <select id="daySel"></select> <span class="updated">· อัปเดตล่าสุด: 30/06/2026 12:45 น.</span></div>
   <button class="btn ghost" id="clearBtn">⟳ Refresh ข้อมูล</button>
   <select id="exportStore"><option value="">— เลือกสาขาเพื่อ export —</option></select>
   <button class="btn" id="exportInactiveBtn" style="background:#0d8a52">⬇ Export คนยังไม่ active วันล่าสุด (.xlsx)</button>
